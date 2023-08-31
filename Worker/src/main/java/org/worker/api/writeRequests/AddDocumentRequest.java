@@ -1,8 +1,10 @@
-package org.worker.api;
+package org.worker.api.writeRequests;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.worker.api.APIRequest;
 import org.worker.models.Document;
 
 
@@ -14,5 +16,5 @@ public class AddDocumentRequest extends APIRequest {
     @NonNull
     private String collectionName;
     @NonNull
-    private Document document;
+    private ObjectNode objectNode;
 }

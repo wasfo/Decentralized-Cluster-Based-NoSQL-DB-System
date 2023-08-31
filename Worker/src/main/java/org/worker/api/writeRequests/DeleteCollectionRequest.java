@@ -1,4 +1,4 @@
-package org.worker.api;
+package org.worker.api.writeRequests;
 
 
 import jakarta.validation.constraints.NotNull;

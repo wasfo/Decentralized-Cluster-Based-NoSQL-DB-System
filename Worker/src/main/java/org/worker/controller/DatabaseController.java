@@ -25,13 +25,14 @@ public class DatabaseController {
     @GetMapping
     public List<String> showDatabases() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return databaseService.showDatabases(authentication.getName());
+        String username = "ahmad2@gmail.com";
+        return databaseService.showDatabases(username);
     }
 
     @PostMapping("/create")
     public ResponseEntity<String> createDatabase(@RequestBody @NotBlank @NotNull String dbName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+        String username = "ahmad2@gmail.com";
         return databaseService.createDatabase(username, dbName);
     }
 

@@ -1,17 +1,19 @@
-package org.worker.api;
+package org.worker.api.readRequests;
 
-
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.APIRequest;
 
-@Data
-@RequiredArgsConstructor
-public class DeleteDocumentRequest extends APIRequest {
 
-    @NonNull
+
+@RequiredArgsConstructor
+@Data
+public class ReadCollectionRequest extends APIRequest {
+
+    @NotNull
     private String dbName;
-    @NonNull
+    @NotNull
     private String collectionName;
+
 }

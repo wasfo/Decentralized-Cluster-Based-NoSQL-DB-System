@@ -28,11 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-
 /**
  * index file format is 'fieldName'_index.json
  */
-
 
 @Service
 @Slf4j
@@ -73,7 +71,7 @@ public class IndexingServiceImpl implements IndexingService {
                 HashMap<IndexObject, List<String>> indexMap = new HashMap<>();
                 for (Document document : collection.get().getDocuments()) {
                     String value = document.getObjectNode().get(fieldName).asText();
-                    IndexObject indexObject = new IndexObject(collectionName, fieldName, value);
+                    IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, value);
                     if (indexMap.containsKey(indexObject))
                         indexMap.get(indexObject).add(document.get_id());
                     else {
@@ -122,7 +120,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public HashMap<IndexObject, List<String>> readIndex(String userDir, String dbName, String collectionName, String fieldName) throws IOException {
-        Path indexPath = Path.of(userDir, dbName, collectionName, fieldName + "_index.json" );
+        Path indexPath = Path.of(userDir, dbName, collectionName, fieldName + "_index.json");
         TypeReference<HashMap<IndexObject, List<String>>> typeReference = new TypeReference<>() {
         };
         ObjectMapper objectMapper = new ObjectMapper();

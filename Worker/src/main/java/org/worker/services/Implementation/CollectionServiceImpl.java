@@ -1,24 +1,27 @@
 package org.worker.services.Implementation;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.worker.models.Collection;
 import org.worker.models.Document;
 import org.worker.services.CollectionService;
 import org.worker.services.JsonService;
 import org.worker.utils.SchemaValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+
 import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
 
@@ -36,15 +39,15 @@ public class CollectionServiceImpl implements CollectionService {
 
 
     @Override
-    public Optional<Collection> readCollection(Path collectionDirectory) throws IOException {
-        if (!collectionDirectory.toFile().exists())
-            return Optional.empty();
+    public Optional<Collection> readCollection(Path collectionPath) throws IOException {
+        System.out.println("collection Name -> " + collectionPath.getFileName());
 
-        Path path = Path.of(collectionDirectory.toString(), collectionDirectory.getFileName() + ".json");
+        if (!collectionPath.toFile().exists())
+            return Optional.empty();
         TypeReference<Collection> typeReference = new TypeReference<>() {
         };
         ObjectMapper mapper = new ObjectMapper();
-        try (InputStream inputStream = Files.newInputStream(path)) {
+        try (InputStream inputStream = Files.newInputStream(collectionPath)) {
             Collection collection = mapper.readValue(inputStream, typeReference);
             return Optional.of(collection);
         }
@@ -108,23 +111,30 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public ResponseEntity<String> addDocument(String userDir, String dbName,
-                                              String collectionName, Document document) throws IOException, ProcessingException {
+                                              String collectionName,
+                                              ObjectNode objectNode) throws IOException, ProcessingException {
         // I should Create Data validation here.
-        Path path = Path.of(Storage_Path, userDir, dbName, collectionName + ".json");
-        if (path.toFile().exists()) {
-            return getResponseEntity("Collection with this Name already exists",
+        Path collectionPath = Path.of(Storage_Path, userDir, dbName, collectionName, collectionName + ".json");
+        System.out.println("PATH -> " + collectionPath);
+        if (!collectionPath.toFile().exists()) {
+            return getResponseEntity("Collection with this Name does not exist",
                     HttpStatus.BAD_REQUEST);
         }
         ObjectNode schemaNode = readSchema(userDir, dbName, collectionName);
-
+        Document document = Document.createEmptyDocument();
+        document.setObjectNode(objectNode);
+        System.out.println("document ->" + document);
         // replace with schema validator
         boolean isValidDocument = SchemaValidator.isValidDocument(schemaNode, document);
-
+        System.out.println("is valid document -> " + isValidDocument);
         if (!isValidDocument)
             return getResponseEntity("Document fields does not follow the schema structure",
                     HttpStatus.BAD_REQUEST);
         else {
-            jsonService.addJsonNodeToJsonArray(new File(path.toString()), document.getObjectNode());
+            Collection collection = readCollection(collectionPath).get();
+            collection.addDocument(document);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(collectionPath.toFile(), collection);
             return getResponseEntity("Document added Successfully",
                     HttpStatus.OK);
         }
@@ -146,7 +156,6 @@ public class CollectionServiceImpl implements CollectionService {
             return (ObjectNode) new ObjectMapper().readTree(inputStream);
         }
     }
-
 
 
     public static void createTestCollection() {

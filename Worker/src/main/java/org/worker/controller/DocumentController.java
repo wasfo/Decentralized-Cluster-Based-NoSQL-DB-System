@@ -29,9 +29,4 @@ public class DocumentController {
         return documentService.deleteById(id, userDir, dbName, collectionName);
     }
 
-    @GetMapping("/")
-    public String home2() {
-        System.out.println("this is invoked");
-        return "home";
-    }
 }

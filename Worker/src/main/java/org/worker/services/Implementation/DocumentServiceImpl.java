@@ -1,7 +1,7 @@
 package org.worker.services.Implementation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import org.worker.models.Collection;
 import org.worker.models.Document;
 import org.worker.models.JsonProperty;
 import org.worker.services.CollectionService;
@@ -14,15 +14,18 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
+import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
 
     private final JsonService jsonService;
-    private final CollectionService collectionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final CollectionService collectionService;
+
 
     @Autowired
     public DocumentServiceImpl(JsonService jsonService, CollectionService collectionService) {
@@ -30,9 +33,34 @@ public class DocumentServiceImpl implements DocumentService {
         this.collectionService = collectionService;
     }
 
+
     @Override
-    public ResponseEntity<String> addDocument(String userDir, String dbName, String collectionName, Document document) throws IOException, ProcessingException {
-        return collectionService.addDocument(userDir, dbName, collectionName, document);
+    public ResponseEntity<?> readDocumentById(String userDir,
+                                              String dbName,
+                                              String collectionName,
+                                              String id) throws IOException {
+
+        Path path = Path.of(Storage_Path, userDir, dbName, collectionName, collectionName + ".json");
+        if (!path.toFile().exists()) {
+            return new ResponseEntity<>("collection doesn't not exist", HttpStatus.BAD_REQUEST);
+        }
+        Collection collection = collectionService.readCollection(path).get();
+        for (Document document : collection.getDocuments()) {
+            if (document.get_id().equals(id)) {
+                return new ResponseEntity<>(document, HttpStatus.OK);
+            }
+        }
+
+        return new ResponseEntity<>("document was not found in "
+                + collectionName + " collection", HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<List<Document>> readDocumentsByCriteria(String userDir,
+                                                                  String dbName,
+                                                                  String collectionName,
+                                                                  JsonProperty<?> jsonProperty) {
+        return null;
     }
 
     @Override

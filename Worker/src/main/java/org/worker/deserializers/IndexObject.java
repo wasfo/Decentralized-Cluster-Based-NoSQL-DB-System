@@ -9,10 +9,10 @@ import java.util.Objects;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class IndexObject {
-
-    String collectionName;
-    String fieldName;
-    String value;
+    private String dbName;
+    private String collectionName;
+    private String fieldName;
+    private String value;
 
     public String getCollectionName() {
         return collectionName;
