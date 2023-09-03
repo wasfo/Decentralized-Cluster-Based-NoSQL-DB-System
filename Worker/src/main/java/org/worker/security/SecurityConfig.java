@@ -17,11 +17,15 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-//@Configuration
-//@EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
-    @Autowired
     public UserDetailsServiceFromJson userDetailsServiceFromJson;
+
+    @Autowired
+    public SecurityConfig(UserDetailsServiceFromJson userDetailsServiceFromJson) {
+        this.userDetailsServiceFromJson = userDetailsServiceFromJson;
+    }
 
     @SuppressWarnings("deprecation")
     @Bean
@@ -32,74 +36,27 @@ public class SecurityConfig {
     /**
      * predefined node credentials
      */
-    @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-        UserDetails nodeCredentials = User.builder()
-                .username("worker")
-                .password("{noop}123")
-                .roles("NODE")
-                .build();
-
-        return new InMemoryUserDetailsManager(nodeCredentials);
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(configurer ->
-                        {
-                            configurer
-                                    .requestMatchers("/login", "/static/**").permitAll()
-                                    .requestMatchers("/admin/**").hasRole("NODE")
-                                    .anyRequest().authenticated();
-
-
-                        }
-
-                ).formLogin(Customizer.withDefaults())
-                .authenticationManager(authman(http, passwordEncoder()))
-                .httpBasic(Customizer.withDefaults());
+                {
+                    configurer.requestMatchers("/admin/**").permitAll()
+                            .anyRequest().authenticated();
+                }
+        ).httpBasic(Customizer.withDefaults())
+                .csrf().disable();
         return http.build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(inMemoryUserDetailsManager());
+        authenticationProvider.setUserDetailsService(userDetailsServiceFromJson);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
 
-    @Bean
-    public AuthenticationManager authman(HttpSecurity httpSecurity,
-                                         NoOpPasswordEncoder passwordEncoder)
-            throws Exception {
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity
-                .getSharedObject(AuthenticationManagerBuilder.class);
-
-        authenticationManagerBuilder
-                .userDetailsService(inMemoryUserDetailsManager())
-                .passwordEncoder(passwordEncoder);
-        return authenticationManagerBuilder.build();
-
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity,
-                                                       NoOpPasswordEncoder passwordEncoder)
-            throws Exception {
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity
-                .getSharedObject(AuthenticationManagerBuilder.class);
-
-        authenticationManagerBuilder
-                .userDetailsService(inMemoryUserDetailsManager())
-                .and()
-                .userDetailsService(userDetailsServiceFromJson)
-                .passwordEncoder(passwordEncoder);
-        return authenticationManagerBuilder.build();
-
-    }
 //
 //    @Autowired
 //    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

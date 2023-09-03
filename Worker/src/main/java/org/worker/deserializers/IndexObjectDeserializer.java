@@ -11,10 +11,11 @@ public class IndexObjectDeserializer extends JsonDeserializer<IndexObject> {
     @Override
     public IndexObject deserialize(JsonParser jsonParser,
                                    DeserializationContext deserializationContext) throws IOException {
-        JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        String collectionName = node.get("collectionName").asText();
-        String fieldName = node.get("fieldName").asText();
-        String value = node.get("value").asText();
-        return new IndexObject(collectionName, fieldName, value);
+//        JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+//        String collectionName = node.get("collectionName").asText();
+//        String fieldName = node.get("fieldName").asText();
+//        String value = node.get("value").asText();
+//        return new IndexObject(collectionName, fieldName, value);
+        return null;
     }
 }

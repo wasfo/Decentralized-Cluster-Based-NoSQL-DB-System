@@ -42,11 +42,8 @@ public class CollectionController {
 
     @GetMapping("/read")
     public ResponseEntity<?> readCollection(@RequestBody ReadCollectionRequest request) throws IOException {
-        // String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        String username = "ahmad2@gmail.com";
-        Path path = Path.of(Storage_Path, username, request.getDbName(), request.getCollectionName());
-
-        Optional<Collection> collection = collectionService.readCollection(path);
+         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Collection> collection = collectionService.readCollection(username, request.getDbName(), request.getCollectionName());
         if (collection.isPresent())
             return new ResponseEntity<>(collection.get(), HttpStatus.OK);
         return new ResponseEntity<>("Collection doesn't not exit", HttpStatus.INTERNAL_SERVER_ERROR);

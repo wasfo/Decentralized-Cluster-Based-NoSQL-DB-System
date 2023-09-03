@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public interface CollectionService {
-    public Optional<Collection> readCollection(Path collectionDirectory) throws IOException;
+    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException;
 
     public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName);
 

@@ -24,7 +24,8 @@ public class UsersRepoService implements UsersRepository {
 
 
     ObjectMapper objectMapper = new ObjectMapper();
-    TypeReference<List<User>> typeReference = new TypeReference<>() {};
+    TypeReference<List<User>> typeReference = new TypeReference<>() {
+    };
 
     public UsersRepoService() {
         objectMapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
@@ -37,7 +38,6 @@ public class UsersRepoService implements UsersRepository {
                 .stream()
                 .filter(user -> user.getUsername().equals(email))
                 .findFirst();
-//        System.out.println("is Found? -> " + targetUser.isPresent());
         return targetUser;
     }
 
@@ -58,6 +58,7 @@ public class UsersRepoService implements UsersRepository {
         return false;
     }
 
+    @Override
     public List<User> readUsers() {
         try {
             InputStream inputStream = Files.newInputStream(Path.of(USERS_JSON_PATH));

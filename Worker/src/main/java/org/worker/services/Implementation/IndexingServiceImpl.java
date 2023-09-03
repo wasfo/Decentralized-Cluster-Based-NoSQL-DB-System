@@ -28,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.worker.constants.FilePaths.Storage_Path;
+
 /**
  * index file format is 'fieldName'_index.json
  */
@@ -49,26 +51,22 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public ResponseEntity<String> createIndex(String userDir, String dbName, String collectionName,
+    public ResponseEntity<String> createIndex(String username, String dbName, String collectionName,
                                               String fieldName) throws IOException {
 
+        ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
+        Path collectionDirectory = Path.of(Storage_Path, username, dbName, collectionName);
 
-        ObjectNode schema = collectionService.readSchema(userDir, dbName, collectionName);
+        ResponseEntity<String> BAD_REQUEST = fieldNameExists(fieldName, schema);
+        if (BAD_REQUEST != null) return BAD_REQUEST;
 
-        if (!schema.has(fieldName)) {
-            return DbUtils.getResponseEntity("collection doesn't have the field name specified",
-                    HttpStatus.BAD_REQUEST);
-        }
-        Path collectionDirectory = Path.of(userDir, dbName, collectionName);
-        if (indexAlreadyExists(collectionDirectory, fieldName)) {
-            return DbUtils.getResponseEntity("this field is already indexed",
-                    HttpStatus.BAD_REQUEST);
-        }
+        ResponseEntity<String> BAD_REQUEST1 = isFieldAlreadyIndexed(fieldName, collectionDirectory);
+        if (BAD_REQUEST1 != null) return BAD_REQUEST1;
 
         try {
-            Optional<Collection> collection = collectionService.readCollection(collectionDirectory);
+            Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName);
             if (collection.isPresent()) {
-                HashMap<IndexObject, List<String>> indexMap = new HashMap<>();
+                HashMap<IndexObject, List<String>> indexMap = usersIndexesMap.get(username);
                 for (Document document : collection.get().getDocuments()) {
                     String value = document.getObjectNode().get(fieldName).asText();
                     IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, value);
@@ -82,12 +80,16 @@ public class IndexingServiceImpl implements IndexingService {
                 }
                 ObjectMapper objectMapper = new ObjectMapper();
                 String indexFileName = fieldName + "_" + "index.json";
-                try (OutputStream outputStream = Files.newOutputStream(Path.of(collectionDirectory.toString(), indexFileName))) {
-                    objectMapper.writeValue(outputStream, indexMap);
-
+                Path indexFilePath = Path.of(collectionDirectory.toString(), indexFileName);
+                System.out.println(indexFilePath);
+                boolean isCreated = indexFilePath.toFile().createNewFile();
+                if (isCreated) {
+                    try (OutputStream outputStream = Files.newOutputStream(indexFilePath)) {
+                        objectMapper.writeValue(outputStream, indexMap);
+                    }
                 }
-
             }
+            System.out.println(usersIndexesMap);
 
         } catch (IOException exception) {
             logger.error("An error occurred in indexing:", exception);
@@ -98,11 +100,27 @@ public class IndexingServiceImpl implements IndexingService {
                 HttpStatus.OK);
     }
 
+    private static ResponseEntity<String> isFieldAlreadyIndexed(String fieldName, Path collectionDirectory) {
+        if (indexAlreadyExists(collectionDirectory, fieldName)) {
+            return DbUtils.getResponseEntity("this field is already indexed",
+                    HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
+    private static ResponseEntity<String> fieldNameExists(String fieldName, ObjectNode schema) {
+        if (!schema.has(fieldName)) {
+            return DbUtils.getResponseEntity("collection doesn't have the field name specified",
+                    HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
     static private boolean indexAlreadyExists(Path pathOfCollectionDir, String fieldName) {
         if (!pathOfCollectionDir.toFile().exists())
             return false;
 
-        String indexFile = fieldName + "_" + "index.json";
+        String indexFile = fieldName + "_index.json";
         Optional<String> optionalOfFile = Arrays.stream(Objects.requireNonNull(pathOfCollectionDir.toFile().listFiles()))
                 .map(File::getName)
                 .filter(fileName -> fileName.equals(indexFile))
@@ -112,10 +130,12 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public void removeIndex(String userDir, String dbName, String collectionName, String fieldName) {
-        HashMap<IndexObject, List<String>> indexMap = usersIndexesMap.get(userDir);
-        String key = collectionName + fieldName;
-        indexMap.remove(key);
+    public void removeIndex(String username, String dbName, String collectionName, String fieldName) {
+        IndexObject indexObject = new IndexObject();
+        indexObject.setCollectionName(collectionName);
+        indexObject.setFieldName(fieldName);
+        usersIndexesMap.get(username).remove(indexObject);
+
     }
 
     @Override

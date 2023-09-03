@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,12 +19,18 @@ import static org.com.url.Urls.*;
 public class WriteController {
 
     private RestTemplate restTemplate;
-    private final String workerUrl = "http://localhost:8081";
+    private final String workerUrl = "http://WORKER";
 
     @Autowired
     public WriteController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
 
+    }
+
+    @GetMapping("/hello")
+    public void hello() {
+        String url = workerUrl + "/admin/hello";
+        ResponseEntity<?> response = restTemplate.getForEntity(url, String.class);
     }
 
     @PostMapping("/collections/delete")

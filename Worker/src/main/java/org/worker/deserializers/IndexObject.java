@@ -21,7 +21,6 @@ public class IndexObject {
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
-
     public String getFieldName() {
         return fieldName;
     }
@@ -44,18 +43,17 @@ public class IndexObject {
         if (o == null || getClass() != o.getClass()) return false;
         IndexObject that = (IndexObject) o;
         return Objects.equals(collectionName, that.collectionName) &&
-                Objects.equals(fieldName, that.fieldName) &&
-                Objects.equals(value, that.value);
+                Objects.equals(fieldName, that.fieldName);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(collectionName, fieldName, value);
     }
-//
-//    @Override
-//    public String toString() {
-//        return "(" + collectionName + ", " + fieldName + ", " + value + ")";
-//
-//    }
+
+    @Override
+    public String toString() {
+        return "(" + collectionName + ", " + fieldName + ", " + value + ")";
+
+    }
 }

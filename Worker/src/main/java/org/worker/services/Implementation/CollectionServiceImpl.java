@@ -39,8 +39,10 @@ public class CollectionServiceImpl implements CollectionService {
 
 
     @Override
-    public Optional<Collection> readCollection(Path collectionPath) throws IOException {
-        System.out.println("collection Name -> " + collectionPath.getFileName());
+    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException {
+
+        Path collectionPath = Path.of(Storage_Path, username,
+                dbName, collectionName, collectionName + ".json");
 
         if (!collectionPath.toFile().exists())
             return Optional.empty();
@@ -131,7 +133,7 @@ public class CollectionServiceImpl implements CollectionService {
             return getResponseEntity("Document fields does not follow the schema structure",
                     HttpStatus.BAD_REQUEST);
         else {
-            Collection collection = readCollection(collectionPath).get();
+            Collection collection = readCollection(userDir, dbName, collectionName).get();
             collection.addDocument(document);
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(collectionPath.toFile(), collection);

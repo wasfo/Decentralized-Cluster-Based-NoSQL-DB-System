@@ -11,8 +11,9 @@ import org.worker.api.writeRequests.DeleteCollectionRequest;
 @RequestMapping("/admin")
 public class AdminController {
 
-    @PostMapping("/hello")
-    public String get(@RequestBody DeleteCollectionRequest apiRequest) {
+    @GetMapping("/hello")
+    public String get() {
+        System.out.println("hello my boiiiii!");
         return "hello my boi";
     }
 

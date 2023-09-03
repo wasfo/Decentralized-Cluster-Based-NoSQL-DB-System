@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
@@ -39,17 +40,18 @@ public class DocumentServiceImpl implements DocumentService {
                                               String dbName,
                                               String collectionName,
                                               String id) throws IOException {
-
-        Path path = Path.of(Storage_Path, userDir, dbName, collectionName, collectionName + ".json");
-        if (!path.toFile().exists()) {
-            return new ResponseEntity<>("collection doesn't not exist", HttpStatus.BAD_REQUEST);
-        }
-        Collection collection = collectionService.readCollection(path).get();
-        for (Document document : collection.getDocuments()) {
-            if (document.get_id().equals(id)) {
-                return new ResponseEntity<>(document, HttpStatus.OK);
+        Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName);
+        if (collection.isPresent()) {
+            for (Document document : collection.get().getDocuments()) {
+                if (document.get_id().equals(id)) {
+                    return new ResponseEntity<>(document, HttpStatus.OK);
+                }
             }
+        } else {
+            new ResponseEntity<>("Collection "
+                    + collectionName + "is Empty", HttpStatus.BAD_REQUEST);
         }
+
 
         return new ResponseEntity<>("document was not found in "
                 + collectionName + " collection", HttpStatus.BAD_REQUEST);
