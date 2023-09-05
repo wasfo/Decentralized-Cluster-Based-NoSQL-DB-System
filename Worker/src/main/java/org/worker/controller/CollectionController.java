@@ -22,6 +22,7 @@ import org.worker.utils.DbUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static org.worker.constants.FilePaths.Storage_Path;
 
@@ -41,9 +42,9 @@ public class CollectionController {
     }
 
     @GetMapping("/read")
-    public ResponseEntity<?> readCollection(@RequestBody ReadCollectionRequest request) throws IOException {
+    public ResponseEntity<?> readCollection(@RequestBody ReadCollectionRequest request) throws IOException, ExecutionException, InterruptedException {
          String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<Collection> collection = collectionService.readCollection(username, request.getDbName(), request.getCollectionName());
+        Optional<Collection> collection = collectionService.readCollection(username, request.getDbName(), request.getCollectionName()).get();
         if (collection.isPresent())
             return new ResponseEntity<>(collection.get(), HttpStatus.OK);
         return new ResponseEntity<>("Collection doesn't not exit", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -83,7 +84,7 @@ public class CollectionController {
 
     @PostMapping("/add/doc")
     public ResponseEntity<String> addDocument(@RequestBody @Validated AddDocumentRequest request,
-                                              BindingResult bindingResult) {
+                                              BindingResult bindingResult) throws IOException, ExecutionException, InterruptedException {
 
         if (bindingResult.hasErrors()) {
             return DbUtils.getResponseEntity("incorrect fields at adding document request",

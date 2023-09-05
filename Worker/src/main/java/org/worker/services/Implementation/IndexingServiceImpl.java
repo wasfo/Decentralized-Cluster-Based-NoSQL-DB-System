@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.worker.constants.FilePaths.Storage_Path;
 
@@ -67,7 +68,7 @@ public class IndexingServiceImpl implements IndexingService {
         if (BAD_REQUEST1 != null) return BAD_REQUEST1;
 
         try {
-            Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName);
+            Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName).get();
             if (collection.isPresent()) {
                 IndexingMap indexingMap = usersIndexesMap.get(username);
 
@@ -104,6 +105,8 @@ public class IndexingServiceImpl implements IndexingService {
             logger.error("An error occurred in indexing:", exception);
             return DbUtils.getResponseEntity("internal server error in indexing service",
                     HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
         return DbUtils.getResponseEntity("indexing on field: " + fieldName + " created successfully",
                 HttpStatus.OK);

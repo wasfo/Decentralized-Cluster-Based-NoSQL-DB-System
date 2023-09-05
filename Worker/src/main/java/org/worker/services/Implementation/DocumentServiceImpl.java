@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
@@ -39,8 +40,8 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<?> readDocumentById(String userDir,
                                               String dbName,
                                               String collectionName,
-                                              String id) throws IOException {
-        Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName);
+                                              String id) throws IOException, ExecutionException, InterruptedException {
+        Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName).get();
         if (collection.isPresent()) {
             for (Document document : collection.get().getDocuments()) {
                 if (document.get_id().equals(id)) {

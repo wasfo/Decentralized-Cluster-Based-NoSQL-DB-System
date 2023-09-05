@@ -9,13 +9,14 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface DocumentService {
 
     public ResponseEntity<?> readDocumentById(String userDir,
                                                    String dbName,
                                                    String collectionName,
-                                                   String id) throws IOException, ProcessingException;
+                                                   String id) throws IOException, ProcessingException, ExecutionException, InterruptedException;
 
     public ResponseEntity<List<Document>> readDocumentsByCriteria(String userDir,
                                                                   String dbName,

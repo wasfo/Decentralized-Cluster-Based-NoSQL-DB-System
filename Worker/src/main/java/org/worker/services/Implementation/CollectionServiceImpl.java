@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.worker.models.Collection;
 import org.worker.models.Document;
@@ -21,6 +22,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
@@ -38,20 +41,22 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
 
+
     @Override
-    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException {
+    @Async
+    public CompletableFuture<Optional<Collection>> readCollection(String username, String dbName, String collectionName) throws IOException {
 
         Path collectionPath = Path.of(Storage_Path, username,
                 dbName, collectionName, collectionName + ".json");
 
         if (!collectionPath.toFile().exists())
-            return Optional.empty();
+            return CompletableFuture.completedFuture(Optional.empty());
         TypeReference<Collection> typeReference = new TypeReference<>() {
         };
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream inputStream = Files.newInputStream(collectionPath)) {
             Collection collection = mapper.readValue(inputStream, typeReference);
-            return Optional.of(collection);
+            return CompletableFuture.completedFuture(Optional.of(collection));
         }
     }
 
@@ -114,7 +119,7 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public ResponseEntity<String> addDocument(String userDir, String dbName,
                                               String collectionName,
-                                              ObjectNode objectNode) throws IOException, ProcessingException {
+                                              ObjectNode objectNode) throws IOException, ProcessingException, ExecutionException, InterruptedException {
         // I should Create Data validation here.
         Path collectionPath = Path.of(Storage_Path, userDir, dbName, collectionName, collectionName + ".json");
         System.out.println("PATH -> " + collectionPath);
@@ -133,7 +138,7 @@ public class CollectionServiceImpl implements CollectionService {
             return getResponseEntity("Document fields does not follow the schema structure",
                     HttpStatus.BAD_REQUEST);
         else {
-            Collection collection = readCollection(userDir, dbName, collectionName).get();
+            Collection collection = readCollection(userDir, dbName, collectionName).get().get();
             collection.addDocument(document);
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(collectionPath.toFile(), collection);
