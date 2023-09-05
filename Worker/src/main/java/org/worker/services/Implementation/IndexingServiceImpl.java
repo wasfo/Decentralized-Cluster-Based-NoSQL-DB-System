@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.worker.datastructure.FieldValueMap;
+import org.worker.datastructure.IndexingMap;
 import org.worker.deserializers.HashMapKeyDeserializer;
 import org.worker.deserializers.HashMapKeySerializer;
 import org.worker.deserializers.IndexObject;
@@ -38,15 +40,16 @@ import static org.worker.constants.FilePaths.Storage_Path;
 @Slf4j
 
 public class IndexingServiceImpl implements IndexingService {
-    private HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap;
+    private HashMap<String, IndexingMap> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
     private CollectionService collectionService = new CollectionServiceImpl(new JsonServiceImpl());
 
     public IndexingServiceImpl() {
     }
 
+
     @Autowired
-    public IndexingServiceImpl(HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap) {
+    public IndexingServiceImpl(HashMap<String, IndexingMap> usersIndexesMap) {
         this.usersIndexesMap = usersIndexesMap;
     }
 
@@ -66,26 +69,32 @@ public class IndexingServiceImpl implements IndexingService {
         try {
             Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName);
             if (collection.isPresent()) {
-                HashMap<IndexObject, List<String>> indexMap = usersIndexesMap.get(username);
+                IndexingMap indexingMap = usersIndexesMap.get(username);
+
+                indexingMap.putDatabase(dbName);
+                indexingMap.putCollection(dbName, collectionName);
+                System.out.println("indexing map ->" + indexingMap.getDatabasesMap(dbName));
+                HashMap<Map.Entry<String, Object>, List<String>> map =
+                        indexingMap.getFieldValueMap(collectionName).getMap();
+
                 for (Document document : collection.get().getDocuments()) {
                     String value = document.getObjectNode().get(fieldName).asText();
-                    IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, value);
-                    if (indexMap.containsKey(indexObject))
-                        indexMap.get(indexObject).add(document.get_id());
+                    Map.Entry<String, Object> entry = Map.entry(fieldName, value);
+                    if (map.containsKey(entry))
+                        map.get(entry).add(document.get_id());
                     else {
                         List<String> list = new ArrayList<>();
                         list.add(document.get_id());
-                        indexMap.put(indexObject, list);
+                        map.put(entry, list);
                     }
                 }
                 ObjectMapper objectMapper = new ObjectMapper();
                 String indexFileName = fieldName + "_" + "index.json";
                 Path indexFilePath = Path.of(collectionDirectory.toString(), indexFileName);
-                System.out.println(indexFilePath);
                 boolean isCreated = indexFilePath.toFile().createNewFile();
                 if (isCreated) {
                     try (OutputStream outputStream = Files.newOutputStream(indexFilePath)) {
-                        objectMapper.writeValue(outputStream, indexMap);
+                        objectMapper.writeValue(outputStream, map);
                     }
                 }
             }
@@ -134,7 +143,8 @@ public class IndexingServiceImpl implements IndexingService {
         IndexObject indexObject = new IndexObject();
         indexObject.setCollectionName(collectionName);
         indexObject.setFieldName(fieldName);
-        usersIndexesMap.get(username).remove(indexObject);
+        usersIndexesMap.get(username).getFieldValueMap(collectionName);
+        System.out.println("inside removed index method -> " + usersIndexesMap);
 
     }
 
@@ -154,8 +164,17 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
-    public HashMap<String, HashMap<IndexObject, List<String>>> getUsersIndexesMap() {
+    public HashMap<String, IndexingMap> getUsersIndexesMap() {
         return usersIndexesMap;
     }
 
+
+    public static void main(String[] args) {
+        IndexObject indexObject1 = new IndexObject("students", "age", "32");
+        IndexObject indexObject2 = new IndexObject("students", "age", "55");
+        HashMap<IndexObject, Integer> map = new HashMap<>();
+        map.put(indexObject1, 3);
+        map.put(indexObject2, 2);
+        System.out.println(map);
+    }
 }

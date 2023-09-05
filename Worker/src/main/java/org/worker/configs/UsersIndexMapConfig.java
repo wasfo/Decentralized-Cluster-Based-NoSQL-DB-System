@@ -2,6 +2,7 @@ package org.worker.configs;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.worker.datastructure.IndexingMap;
 import org.worker.deserializers.IndexObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,11 +32,11 @@ public class UsersIndexMapConfig {
 
 
     @Bean
-    public HashMap<String, HashMap<IndexObject, List<String>>> usersIndexMap() {
-        HashMap<String, HashMap<IndexObject, List<String>>> map = new HashMap<>();
+    public HashMap<String, IndexingMap> usersIndexMap() {
+        HashMap<String, IndexingMap> map = new HashMap<>();
         List<User> users = usersRepository.readUsers();
         for (User user : users) {
-            map.put(user.getUsername(), new HashMap<>());
+            map.put(user.getUsername(), new IndexingMap());
         }
         return map;
     }
