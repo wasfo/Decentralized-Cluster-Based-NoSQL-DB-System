@@ -41,7 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(configurer ->
                 {
-                    configurer.requestMatchers("/admin/**").permitAll()
+                    configurer.requestMatchers("/admin/unprotected").permitAll()
                             .anyRequest().authenticated();
                 }
         ).httpBasic(Customizer.withDefaults())

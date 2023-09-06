@@ -6,6 +6,12 @@
     <groupId>org.com</groupId>
     <artifactId>eureka-server</artifactId>
 
+    <parent>
+        <groupId>org.example</groupId>
+        <artifactId>Decentralized-Cluster-Based-NoSQL-DB-System</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
     <properties>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
@@ -21,4 +27,26 @@
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
         </dependency>
     </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>org.com.EurekaServerApp</mainClass>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

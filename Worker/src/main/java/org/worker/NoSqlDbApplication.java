@@ -7,14 +7,15 @@ import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClientConfigurati
 import java.io.File;
 
 
-@SpringBootApplication(exclude = {EurekaClientAutoConfiguration.class,
-        EurekaDiscoveryClientConfiguration.class})
+@SpringBootApplication
+//exclude = {EurekaClientAutoConfiguration.class,
+//        EurekaDiscoveryClientConfiguration.class}
 //exclude = SecurityAutoConfiguration.class
 public class NoSqlDbApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(NoSqlDbApplication.class, args);
-        createStorageFileIfNotExist();
+        //createStorageFileIfNotExist();
     }
 
     static public void createStorageFileIfNotExist() {

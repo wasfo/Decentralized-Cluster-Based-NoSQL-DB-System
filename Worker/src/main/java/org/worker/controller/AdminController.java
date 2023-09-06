@@ -20,14 +20,14 @@ public class AdminController {
     @Autowired
     private CollectionService collectionService;
 
-    @GetMapping("/get")
-    public Collection get() throws IOException, ExecutionException, InterruptedException {
-        Optional<Collection> collection = collectionService.
-                readCollection("ahmad2@gmail.com",
-                        "db1",
-                        "students").get();
+    @GetMapping("/unprotected")
+    public String get()  {
+        return "hello from unprotected";
+    }
 
-        return collection.get();
+    @GetMapping("/protected")
+    public String getpro()  {
+        return "hello from protected my boi";
     }
 
 }
