@@ -3,14 +3,22 @@ package org.com.Controller;
 import org.com.api.APIRequest;
 import org.com.api.DeleteCollectionRequest;
 import org.com.api.NewCollectionRequest;
+import org.com.models.Document;
+import org.com.models.Role;
+import org.com.models.User;
 import org.com.url.Urls;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.com.url.Urls.*;
 
@@ -19,12 +27,22 @@ import static org.com.url.Urls.*;
 public class WriteController {
 
     private RestTemplate restTemplate;
+    @Autowired
+    private KafkaTemplate<String, User> kafkaTemplate;
     private final String workerUrl = "http://WORKER";
 
+
     @Autowired
-    public WriteController(RestTemplate restTemplate) {
+
+    public WriteController(@Qualifier("writeTemplate") RestTemplate restTemplate ) {
         this.restTemplate = restTemplate;
 
+    }
+
+    @GetMapping("/sendWithKafka")
+    public void sendWithKafka() {
+        User user = new User("potato","1234567", new ArrayList<>(List.of(Role.USER)));
+        kafkaTemplate.send("UserTopic", user);
     }
 
     @GetMapping("/hello")

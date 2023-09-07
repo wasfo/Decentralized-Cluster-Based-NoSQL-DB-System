@@ -16,4 +16,6 @@ public class NewCollectionRequest extends APIRequest {
     private ObjectNode schema;
     @NotNull
     private String dbName;
+
+
 }

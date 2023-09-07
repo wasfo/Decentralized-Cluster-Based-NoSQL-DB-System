@@ -14,7 +14,7 @@
         <module>Worker</module>
         <module>Bootstrapping-Node</module>
         <module>eureka-server</module>
-        <module>WriteOperationsLoadbalancer</module>
+        <module>Loadbalancer</module>
     </modules>
 
 
@@ -35,6 +35,8 @@
                 <scope>import</scope>
             </dependency>
         </dependencies>
+
+
     </dependencyManagement>
 
     <properties>

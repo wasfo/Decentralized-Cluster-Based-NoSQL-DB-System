@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -39,12 +40,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http.authorizeHttpRequests(configurer ->
                 {
                     configurer.requestMatchers("/admin/unprotected").permitAll()
                             .anyRequest().authenticated();
                 }
         ).httpBasic(Customizer.withDefaults())
+                .formLogin()
+                .loginProcessingUrl("/process-login")
+                .permitAll()
+                .and()
                 .csrf().disable();
         return http.build();
     }
