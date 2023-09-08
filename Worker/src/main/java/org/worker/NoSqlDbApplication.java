@@ -11,10 +11,9 @@ import org.worker.user.User;
 import java.io.File;
 
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {EurekaClientAutoConfiguration.class,
+        EurekaDiscoveryClientConfiguration.class})
 @Slf4j
-//exclude = {EurekaClientAutoConfiguration.class,
-//        EurekaDiscoveryClientConfiguration.class}
 //exclude = SecurityAutoConfiguration.class
 public class NoSqlDbApplication {
 
@@ -23,10 +22,10 @@ public class NoSqlDbApplication {
         //createStorageFileIfNotExist();
     }
 
-    @KafkaListener(topics = "UserTopic")
-    public void receiveFromKafka(User user) {
-        log.info("recieved from kafka this user - {}", user);
-    }
+//    @KafkaListener(topics = "UserTopic")
+//    public void receiveFromKafka(User user) {
+//        log.info("recieved from kafka this user - {}", user);
+//    }
 
 
     static public void createStorageFileIfNotExist() {

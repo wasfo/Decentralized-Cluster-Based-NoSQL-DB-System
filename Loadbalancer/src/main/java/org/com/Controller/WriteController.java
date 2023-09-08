@@ -3,10 +3,8 @@ package org.com.Controller;
 import org.com.api.APIRequest;
 import org.com.api.DeleteCollectionRequest;
 import org.com.api.NewCollectionRequest;
-import org.com.models.Document;
 import org.com.models.Role;
 import org.com.models.User;
-import org.com.url.Urls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -29,11 +27,10 @@ public class WriteController {
     private RestTemplate restTemplate;
     @Autowired
     private KafkaTemplate<String, User> kafkaTemplate;
-    private final String workerUrl = "http://WORKER";
+    private final String nodeUrl = "http://NODE";
 
 
     @Autowired
-
     public WriteController(@Qualifier("writeTemplate") RestTemplate restTemplate ) {
         this.restTemplate = restTemplate;
 
@@ -47,7 +44,7 @@ public class WriteController {
 
     @GetMapping("/hello")
     public void hello() {
-        String url = workerUrl + "/admin/hello";
+        String url = nodeUrl + "/admin/hello";
         ResponseEntity<?> response = restTemplate.getForEntity(url, String.class);
     }
 
@@ -55,7 +52,7 @@ public class WriteController {
     public void deleteCollectionRequest(@RequestBody DeleteCollectionRequest deleteCollectionRequest,
                                         @RequestHeader HttpHeaders headers) {
 
-        String url = workerUrl + baseCollectionUrl;
+        String url = nodeUrl + baseCollectionUrl;
         HttpEntity<APIRequest> entity = new HttpEntity<>(deleteCollectionRequest, headers);
         restTemplate.exchange(url,
                 HttpMethod.DELETE,
@@ -68,7 +65,7 @@ public class WriteController {
     public void writeCollectionRequest(@RequestBody NewCollectionRequest apiRequest,
                                        @RequestHeader HttpHeaders headers) {
 
-        String url = workerUrl + baseCollectionUrl + "/new";
+        String url = nodeUrl + baseCollectionUrl + "/new";
 
         HttpEntity<APIRequest> entity = new HttpEntity<>(apiRequest, headers);
         restTemplate.exchange(url,
@@ -81,7 +78,7 @@ public class WriteController {
     public void createDatabase(@RequestBody String dbName,
                                @RequestHeader HttpHeaders headers) {
 
-        String url = workerUrl + createDatabaseUrl;
+        String url = nodeUrl + createDatabaseUrl;
 
         HttpEntity<String> entity = new HttpEntity<>(dbName, headers);
         restTemplate.exchange(url,

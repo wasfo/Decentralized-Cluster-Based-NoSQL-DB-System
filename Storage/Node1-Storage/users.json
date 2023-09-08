@@ -1,16 +1,14 @@
 [
   {
-    "username": "ahmad2@gmail.com",
+    "username": "ahmad",
     "password": "12321",
-    "affinity": "node3",
     "roles": [
       "ADMIN"
     ]
   },
   {
-    "username": "ahmad@gmail.cmo",
+    "username": "ali",
     "password": "12321",
-    "affinity": "node3",
     "roles": [
       "USER"
     ]

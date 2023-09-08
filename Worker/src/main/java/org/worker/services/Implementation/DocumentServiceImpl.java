@@ -41,7 +41,7 @@ public class DocumentServiceImpl implements DocumentService {
                                               String dbName,
                                               String collectionName,
                                               String id) throws IOException, ExecutionException, InterruptedException {
-        Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName).get();
+        Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName);
         if (collection.isPresent()) {
             for (Document document : collection.get().getDocuments()) {
                 if (document.get_id().equals(id)) {

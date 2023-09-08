@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public interface CollectionService {
-    public CompletableFuture<Optional<Collection>> readCollection(String username, String dbName, String collectionName) throws IOException;
+    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException;
 
     public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName);
 

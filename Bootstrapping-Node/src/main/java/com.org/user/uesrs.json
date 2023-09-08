@@ -1,1 +1,26 @@
-[{"username":"ahmad","password":"123","affinity":null,"role":null},{"username":"ali","password":"12321","affinity":null,"role":null},{"username":"ali","password":"12321","affinity":null,"role":null},{"username":"ali","password":"12321","affinity":null,"role":null}]
+[
+  {
+    "username": "ahmad",
+    "password": "123",
+    "affinity": null,
+    "role": null
+  },
+  {
+    "username": "ali",
+    "password": "12321",
+    "affinity": null,
+    "role": null
+  },
+  {
+    "username": "ali",
+    "password": "12321",
+    "affinity": null,
+    "role": null
+  },
+  {
+    "username": "ali",
+    "password": "12321",
+    "affinity": null,
+    "role": null
+  }
+]

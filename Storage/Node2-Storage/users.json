@@ -2,7 +2,6 @@
   {
     "username": "ahmad",
     "password": "12321",
-    "affinity": "node3",
     "roles": [
       "ADMIN"
     ]
@@ -10,7 +9,6 @@
   {
     "username": "ali",
     "password": "12321",
-    "affinity": "node3",
     "roles": [
       "USER"
     ]

@@ -15,6 +15,7 @@
         <module>Bootstrapping-Node</module>
         <module>eureka-server</module>
         <module>Loadbalancer</module>
+        <module>DbClient</module>
     </modules>
 
 

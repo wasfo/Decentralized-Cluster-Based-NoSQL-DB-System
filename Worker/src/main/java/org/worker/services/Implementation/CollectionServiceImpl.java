@@ -32,39 +32,26 @@ import static org.worker.utils.DbUtils.getResponseEntity;
 @Service
 public class CollectionServiceImpl implements CollectionService {
 
-    private final JsonService jsonService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Autowired
-    public CollectionServiceImpl(JsonService jsonService) {
-        this.jsonService = jsonService;
-    }
-
 
 
     @Override
     @Async
-    public CompletableFuture<Optional<Collection>> readCollection(String username, String dbName, String collectionName) throws IOException {
+    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException {
 
         Path collectionPath = Path.of(Storage_Path, username,
                 dbName, collectionName, collectionName + ".json");
 
         if (!collectionPath.toFile().exists())
-            return CompletableFuture.completedFuture(Optional.empty());
+            return Optional.empty();
         TypeReference<Collection> typeReference = new TypeReference<>() {
         };
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream inputStream = Files.newInputStream(collectionPath)) {
             Collection collection = mapper.readValue(inputStream, typeReference);
-            return CompletableFuture.completedFuture(Optional.of(collection));
+            return Optional.of(collection);
         }
     }
 
-    public String extractCollectionName(String collectionName) {
-        File collectionfile = new File(collectionName);
-        int extensionIndex = collectionfile.getName().indexOf(".json");
-        return collectionfile.getName().substring(0, extensionIndex);
-    }
 
     @Override
     public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName) {
@@ -138,12 +125,12 @@ public class CollectionServiceImpl implements CollectionService {
             return getResponseEntity("Document fields does not follow the schema structure",
                     HttpStatus.BAD_REQUEST);
         else {
-            Collection collection = readCollection(userDir, dbName, collectionName).get().get();
+            Collection collection = readCollection(userDir, dbName, collectionName).get();
             collection.addDocument(document);
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(collectionPath.toFile(), collection);
             return getResponseEntity("Document added Successfully",
-                    HttpStatus.OK);
+                    HttpStatus.CREATED);
         }
     }
 
@@ -164,24 +151,6 @@ public class CollectionServiceImpl implements CollectionService {
         }
     }
 
-
-    public static void createTestCollection() {
-        Document student1 = Document.createEmptyDocument();
-        student1.put("name", "Ahmad");
-        student1.put("age", 15);
-
-        Document student2 = Document.createEmptyDocument();
-        student2.put("name", "Ali");
-        student2.put("age", 23);
-
-        Collection collection = new Collection("students");
-        collection.addDocument(student1);
-        collection.addDocument(student2);
-
-        ObjectNode schema = new ObjectMapper().createObjectNode();
-        schema.put("name", "String");
-        schema.put("age", "Integer");
-    }
 
 
 }

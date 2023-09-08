@@ -2,6 +2,8 @@ package org.worker.controller;
 
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -43,60 +45,86 @@ public class CollectionController {
 
     @GetMapping("/read")
     public ResponseEntity<?> readCollection(@RequestBody ReadCollectionRequest request) throws IOException, ExecutionException, InterruptedException {
-         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<Collection> collection = collectionService.readCollection(username, request.getDbName(), request.getCollectionName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Collection> collection = collectionService.readCollection(username,
+                request.getDbName(),
+                request.getCollectionName());
+
         if (collection.isPresent())
-            return new ResponseEntity<>(collection.get(), HttpStatus.OK);
+            return new ResponseEntity<>(collection.get(), HttpStatus.FOUND);
         return new ResponseEntity<>("Collection doesn't not exit", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping("/new")
     public ResponseEntity<String> createNewCollection(@RequestBody @Validated NewCollectionRequest request,
+                                                      @RequestHeader HttpHeaders headers,
                                                       BindingResult bindingResult) throws IOException {
         if (bindingResult.hasErrors()) {
             return DbUtils.getResponseEntity("incorrect new collection request",
                     HttpStatus.BAD_REQUEST);
         }
 
-        String username = "ahmad2@gmail.com";
-
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         ResponseEntity<String> response = collectionService.writeCollection(request.getSchema(),
                 username, request.getDbName(), request.getCollection());
 
-//        if (DbUtils.isResponseSuccessful(response)) {
-//            if (!request.isBroadcasted()) {
-//
-//                UserCredentials credentials = new UserCredentials(username, password);
-//                request.setBroadcasted(true);
-//                broadcastService.broadCast(request, credentials, "/api/collections/new");
-//            }
-//        }
+        if (DbUtils.isResponseSuccessful(response)) {
+            if (!request.isBroadcasted()) {
+                broadcastService.broadCast(request, headers, "/api/collections/new",
+                        HttpMethod.POST);
+            }
+        }
 
         return response;
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request) throws IOException {
+    public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request,
+                                                   @RequestHeader HttpHeaders headers) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        return collectionService.deleteCollection(username, request.getDbName(), request.getCollectionName());
+        ResponseEntity<String> response = collectionService.deleteCollection(username,
+                request.getDbName(), request.getCollectionName());
+
+        if (DbUtils.isResponseSuccessful(response)) {
+            if (!request.isBroadcasted()) {
+                broadcastService.broadCast(request,
+                        headers,
+                        "/api/collections/new",
+                        HttpMethod.DELETE);
+            }
+        }
+        return response;
+
     }
 
     @PostMapping("/add/doc")
     public ResponseEntity<String> addDocument(@RequestBody @Validated AddDocumentRequest request,
-                                              BindingResult bindingResult) throws IOException, ExecutionException, InterruptedException {
+                                              @RequestHeader HttpHeaders headers,
+                                              BindingResult bindingResult) throws  ExecutionException {
 
         if (bindingResult.hasErrors()) {
             return DbUtils.getResponseEntity("incorrect fields at adding document request",
                     HttpStatus.BAD_REQUEST);
         }
         try {
-            //  Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            //  String username = authentication.getName();
-            String username = "ahmad2@gmail.com";
-            return collectionService.addDocument(username, request.getDbName(),
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            ResponseEntity<String> response = collectionService.addDocument(username, request.getDbName(),
                     request.getCollectionName(), request.getObjectNode());
-        } catch (IOException | ProcessingException e) {
+
+
+            if (DbUtils.isResponseSuccessful(response)) {
+                if (!request.isBroadcasted()) {
+                    broadcastService.broadCast(request,
+                            headers,
+                            "/api/collections/add/doc",
+                            HttpMethod.POST);
+                }
+            }
+            return response;
+
+        } catch (IOException | ProcessingException | InterruptedException e) {
             return DbUtils.getResponseEntity("something went" +
                     " wrong adding new document", HttpStatus.INTERNAL_SERVER_ERROR);
         }

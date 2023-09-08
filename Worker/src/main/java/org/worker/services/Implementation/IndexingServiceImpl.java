@@ -43,10 +43,7 @@ import static org.worker.constants.FilePaths.Storage_Path;
 public class IndexingServiceImpl implements IndexingService {
     private HashMap<String, IndexingMap> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
-    private CollectionService collectionService = new CollectionServiceImpl(new JsonServiceImpl());
-
-    public IndexingServiceImpl() {
-    }
+    private CollectionService collectionService = new CollectionServiceImpl();
 
 
     @Autowired
@@ -68,7 +65,7 @@ public class IndexingServiceImpl implements IndexingService {
         if (BAD_REQUEST1 != null) return BAD_REQUEST1;
 
         try {
-            Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName).get();
+            Optional<Collection> collection = collectionService.readCollection(username, dbName, collectionName);
             if (collection.isPresent()) {
                 IndexingMap indexingMap = usersIndexesMap.get(username);
 
@@ -105,8 +102,6 @@ public class IndexingServiceImpl implements IndexingService {
             logger.error("An error occurred in indexing:", exception);
             return DbUtils.getResponseEntity("internal server error in indexing service",
                     HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
         }
         return DbUtils.getResponseEntity("indexing on field: " + fieldName + " created successfully",
                 HttpStatus.OK);
@@ -172,12 +167,4 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
 
-    public static void main(String[] args) {
-        IndexObject indexObject1 = new IndexObject("students", "age", "32");
-        IndexObject indexObject2 = new IndexObject("students", "age", "55");
-        HashMap<IndexObject, Integer> map = new HashMap<>();
-        map.put(indexObject1, 3);
-        map.put(indexObject2, 2);
-        System.out.println(map);
-    }
 }
