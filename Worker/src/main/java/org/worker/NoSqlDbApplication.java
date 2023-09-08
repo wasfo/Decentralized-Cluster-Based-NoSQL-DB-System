@@ -1,6 +1,11 @@
 package org.worker;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.POST;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
@@ -11,16 +16,20 @@ import org.worker.user.User;
 import java.io.File;
 
 
+
 @SpringBootApplication(exclude = {EurekaClientAutoConfiguration.class,
         EurekaDiscoveryClientConfiguration.class})
 @Slf4j
 //exclude = SecurityAutoConfiguration.class
 public class NoSqlDbApplication {
 
+
     public static void main(String[] args) {
         SpringApplication.run(NoSqlDbApplication.class, args);
-        //createStorageFileIfNotExist();
+
+
     }
+
 
 //    @KafkaListener(topics = "UserTopic")
 //    public void receiveFromKafka(User user) {

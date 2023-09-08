@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.worker.constants.FilePaths;
 import org.worker.models.Collection;
 import org.worker.models.Document;
 import org.worker.services.CollectionService;
@@ -22,10 +24,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.concurrent.ExecutionException;
 
-import static org.worker.constants.FilePaths.Storage_Path;
 import static org.worker.utils.DbUtils.getResponseEntity;
 
 @Slf4j
@@ -34,11 +35,16 @@ public class CollectionServiceImpl implements CollectionService {
 
 
 
+    private String storagePath;
+
+    public CollectionServiceImpl(@Qualifier("storagePath")String storagePath) {
+        this.storagePath = storagePath;
+    }
+
     @Override
-    @Async
     public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException {
 
-        Path collectionPath = Path.of(Storage_Path, username,
+        Path collectionPath = Path.of(storagePath, username,
                 dbName, collectionName, collectionName + ".json");
 
         if (!collectionPath.toFile().exists())
@@ -55,7 +61,7 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName) {
-        Path path = Path.of(Storage_Path, userDir, dbName, collectionName);
+        Path path = Path.of(storagePath, userDir, dbName, collectionName);
         File file = path.toFile();
         if (file.exists()) {
             boolean fileDeleted = file.delete();
@@ -76,17 +82,17 @@ public class CollectionServiceImpl implements CollectionService {
                     HttpStatus.BAD_REQUEST);
         }
 
-        Path collectionDirectory = Path.of(Storage_Path, userDir, dbName, collection.getCollectionName());
+        Path collectionDirectory = Path.of(storagePath, userDir, dbName, collection.getCollectionName());
 
         if (collectionDirectory.toFile().exists()) {
             return getResponseEntity("Collection with this Name already exists",
-                    HttpStatus.BAD_REQUEST);
+                    HttpStatus.NOT_ACCEPTABLE);
         } else {
             collectionDirectory.toFile().mkdir();
         }
-        Path collectionPath = Path.of(Storage_Path, userDir, dbName, collection.getCollectionName(),
+        Path collectionPath = Path.of(storagePath, userDir, dbName, collection.getCollectionName(),
                 collection.getCollectionName() + ".json");
-        Path schemaPath = Path.of(Storage_Path, userDir, dbName,
+        Path schemaPath = Path.of(storagePath, userDir, dbName,
                 collection.getCollectionName(), "schema.json");
 
         boolean isCollectionCreated = collectionPath.toFile().createNewFile();
@@ -98,7 +104,43 @@ public class CollectionServiceImpl implements CollectionService {
 
         return getResponseEntity("collection created: " + isCollectionCreated
                         + "\n" + " schema created: " + isSchemaCreated
-                , HttpStatus.OK);
+                , HttpStatus.CREATED);
+
+    }
+
+    @Override
+    public ResponseEntity<String> createNewEmptyCollection(ObjectNode schema,
+                                                           String userDir,
+                                                           String dbName,
+                                                           String collectionName) throws IOException {
+        if (schema.isEmpty()) {
+            return getResponseEntity("schema must be specified",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        Path collectionDirectory = Path.of(storagePath, userDir, dbName, collectionName);
+
+        if (collectionDirectory.toFile().exists()) {
+            return getResponseEntity("Collection with this Name already exists",
+                    HttpStatus.NOT_ACCEPTABLE);
+        } else {
+            collectionDirectory.toFile().mkdir();
+        }
+
+        Path collectionPath = Path.of(storagePath, userDir, dbName,collectionName,
+                collectionName + ".json");
+        Path schemaPath = Path.of(storagePath, userDir, dbName,
+                collectionName, "schema.json");
+
+        boolean isCollectionCreated = collectionPath.toFile().createNewFile();
+        boolean isSchemaCreated = schemaPath.toFile().createNewFile();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(schemaPath.toFile(), schema);
+
+        return getResponseEntity("collection created: " + isCollectionCreated
+                        + "\n" + " schema created: " + isSchemaCreated
+                , HttpStatus.CREATED);
 
     }
 
@@ -108,7 +150,7 @@ public class CollectionServiceImpl implements CollectionService {
                                               String collectionName,
                                               ObjectNode objectNode) throws IOException, ProcessingException, ExecutionException, InterruptedException {
         // I should Create Data validation here.
-        Path collectionPath = Path.of(Storage_Path, userDir, dbName, collectionName, collectionName + ".json");
+        Path collectionPath = Path.of(storagePath, userDir, dbName, collectionName, collectionName + ".json");
         System.out.println("PATH -> " + collectionPath);
         if (!collectionPath.toFile().exists()) {
             return getResponseEntity("Collection with this Name does not exist",
@@ -145,12 +187,11 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public ObjectNode readSchema(String userDir, String dbName, String collectionName) throws IOException {
-        Path path = Path.of(Storage_Path, userDir, dbName, collectionName, "schema.json");
+        Path path = Path.of(storagePath, userDir, dbName, collectionName, "schema.json");
         try (InputStream inputStream = Files.newInputStream(path)) {
             return (ObjectNode) new ObjectMapper().readTree(inputStream);
         }
     }
-
 
 
 }

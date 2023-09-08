@@ -15,18 +15,16 @@ import org.worker.api.readRequests.ReadCollectionRequest;
 import org.worker.api.writeRequests.AddDocumentRequest;
 import org.worker.api.writeRequests.DeleteCollectionRequest;
 import org.worker.api.writeRequests.NewCollectionRequest;
+import org.worker.api.writeRequests.NewEmptyCollectionRequest;
 import org.worker.broadcast.BroadcastService;
 import org.worker.models.Collection;
 import org.worker.services.CollectionService;
-import org.worker.user.UserCredentials;
 import org.worker.utils.DbUtils;
-
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static org.worker.constants.FilePaths.Storage_Path;
+
 
 
 @RestController
@@ -52,7 +50,7 @@ public class CollectionController {
 
         if (collection.isPresent())
             return new ResponseEntity<>(collection.get(), HttpStatus.FOUND);
-        return new ResponseEntity<>("Collection doesn't not exit", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("Collection doesn't not exit", HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("/new")
@@ -78,7 +76,27 @@ public class CollectionController {
         return response;
     }
 
-    @DeleteMapping
+    @PostMapping("/newEmpty")
+    public ResponseEntity<String> createNewEmptyCollection(@RequestBody NewEmptyCollectionRequest request,
+                                                      @RequestHeader HttpHeaders headers) throws IOException {
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        ResponseEntity<String> response = collectionService.createNewEmptyCollection(request.getSchema(),
+                username, request.getDbName(), request.getCollectionName());
+
+        if (DbUtils.isResponseSuccessful(response)) {
+            if (!request.isBroadcasted()) {
+                broadcastService.broadCast(request, headers, "/api/collections/newEmpty",
+                        HttpMethod.POST);
+            }
+        }
+
+        return response;
+    }
+
+
+
+    @DeleteMapping("/delete")
     public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request,
                                                    @RequestHeader HttpHeaders headers) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

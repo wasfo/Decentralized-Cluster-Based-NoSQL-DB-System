@@ -3,10 +3,15 @@ package org.worker.repository.Implementation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
+import org.worker.constants.FilePaths;
 import org.worker.repository.UsersRepository;
 import org.worker.user.User;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -16,12 +21,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.worker.constants.FilePaths.USERS_JSON_PATH;
-
 
 @Service
+@DependsOn("filePaths")
 public class UsersRepoService implements UsersRepository {
+    private String usersPath;
 
+    @Autowired
+    public UsersRepoService(@Qualifier("usersPath") String usersPath) {
+        this.usersPath = usersPath;
+    }
 
     ObjectMapper objectMapper = new ObjectMapper();
     TypeReference<List<User>> typeReference = new TypeReference<>() {
@@ -60,11 +69,11 @@ public class UsersRepoService implements UsersRepository {
 
     @Override
     public List<User> readUsers() {
+        System.out.println("USERS PATH INSIDE READ USERS ->" + usersPath);
         try {
-            InputStream inputStream = Files.newInputStream(Path.of(USERS_JSON_PATH));
-            List<User> users = objectMapper.readValue(inputStream, typeReference);
-            inputStream.close();
 
+            File file = new File(usersPath);
+            List<User> users = objectMapper.readValue(file, typeReference);
             return users;
 
         } catch (Exception e) {
@@ -95,7 +104,7 @@ public class UsersRepoService implements UsersRepository {
 
     private synchronized void writeUsersToJson(List<User> users) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(Paths.get(USERS_JSON_PATH).toFile(), users);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(Paths.get(usersPath).toFile(), users);
     }
 
     private boolean userExists(String email) {

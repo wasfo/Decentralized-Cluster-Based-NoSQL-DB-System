@@ -14,8 +14,8 @@ public class NodeConfigs {
     @Bean
     public List<Node> getNodes() {
 
-        Node node1 = new Node("Node1", 8080, NodeStatus.ACTIVE);
-        Node node2 = new Node("Node2", 8081, NodeStatus.ACTIVE);
+        Node node1 = new Node("Node1", 8081, NodeStatus.ACTIVE);
+        Node node2 = new Node("Node2", 8082, NodeStatus.ACTIVE);
 
         return new ArrayList<>(List.of(node1, node2));
     }

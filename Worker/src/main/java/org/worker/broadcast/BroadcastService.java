@@ -16,6 +16,8 @@ import org.worker.user.UserCredentials;
 
 import java.util.List;
 
+
+
 /**
  * broadcast the change for each node.
  */
@@ -26,7 +28,7 @@ public class BroadcastService {
     private final List<Node> nodes;
 
     @Value("${node.name}")
-    private String currentNodeName;
+    public String nodeName;
 
     @Autowired
     public BroadcastService(List<Node> nodes) {
@@ -41,7 +43,7 @@ public class BroadcastService {
         request.setBroadcasted(true);
         HttpEntity<APIRequest> entity = new HttpEntity<>(request, headers);
         for (Node node : nodes) {
-            if (node.getHostname().equals(currentNodeName))
+            if (node.getHostname().equals(nodeName))
                 continue;
             String url = getUrl(node.getHostname(), node.getPort(), endpoint);
             ResponseEntity<String> response = restTemplate.exchange(

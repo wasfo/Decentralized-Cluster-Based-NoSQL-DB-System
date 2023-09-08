@@ -19,6 +19,8 @@ public interface CollectionService {
 
     public ResponseEntity<String> writeCollection(ObjectNode schema, String userDir, String DbName, Collection collection) throws IOException;
 
+    public ResponseEntity<String> createNewEmptyCollection(ObjectNode schema, String userDir, String dbName,String collectionName) throws IOException;
+
     public ResponseEntity<String> addDocument(String userDir, String dbName, String collectionName, ObjectNode objectNode) throws IOException, ProcessingException, ExecutionException, InterruptedException;
 
     public ResponseEntity<String> deleteDocument(String userDir, String dbName, String collectionName, Document document);

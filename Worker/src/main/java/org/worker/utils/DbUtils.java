@@ -2,20 +2,20 @@ package org.worker.utils;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.worker.constants.FilePaths;
 
 import java.io.File;
 
-import static org.worker.constants.FilePaths.Storage_Path;
+
 
 public class DbUtils {
+
+
 
     public static ResponseEntity<String> getResponseEntity(String responseMessage, HttpStatus httpStatus) {
         return new ResponseEntity<String>("message: " + responseMessage, httpStatus);
     }
 
-    static public File getUserDir(String username) {
-        return new File(Storage_Path + "//" + username);
-    }
 
     static public boolean isResponseSuccessful(ResponseEntity<?> response) {
 

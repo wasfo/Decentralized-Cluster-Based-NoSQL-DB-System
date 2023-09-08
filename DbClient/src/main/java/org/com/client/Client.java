@@ -49,5 +49,6 @@ public class Client {
                 entity,
                 Void.class);
 
+        return true;
     }
 }

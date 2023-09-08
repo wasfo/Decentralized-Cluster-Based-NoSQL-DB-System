@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.worker.constants.FilePaths;
 import org.worker.datastructure.FieldValueMap;
 import org.worker.datastructure.IndexingMap;
 import org.worker.deserializers.HashMapKeyDeserializer;
@@ -31,7 +33,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.worker.constants.FilePaths.Storage_Path;
 
 /**
  * index file format is 'fieldName'_index.json
@@ -43,8 +44,11 @@ import static org.worker.constants.FilePaths.Storage_Path;
 public class IndexingServiceImpl implements IndexingService {
     private HashMap<String, IndexingMap> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
-    private CollectionService collectionService = new CollectionServiceImpl();
 
+    @Autowired
+    private CollectionService collectionService;
+
+    private @Qualifier("storagePath") String storage_Path;
 
     @Autowired
     public IndexingServiceImpl(HashMap<String, IndexingMap> usersIndexesMap) {
@@ -56,7 +60,7 @@ public class IndexingServiceImpl implements IndexingService {
                                               String fieldName) throws IOException {
 
         ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
-        Path collectionDirectory = Path.of(Storage_Path, username, dbName, collectionName);
+        Path collectionDirectory = Path.of(storage_Path, username, dbName, collectionName);
 
         ResponseEntity<String> BAD_REQUEST = fieldNameExists(fieldName, schema);
         if (BAD_REQUEST != null) return BAD_REQUEST;

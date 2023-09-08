@@ -1,26 +1,34 @@
 package org.worker.services.Implementation;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.worker.constants.FilePaths;
 import org.worker.services.DatabaseService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import static org.worker.constants.FilePaths.Storage_Path;
+
 import static org.worker.utils.DbUtils.getResponseEntity;
-import static org.worker.utils.DbUtils.getUserDir;
+
 
 @Service
 @Primary
 public class DatabaseServiceImpl implements DatabaseService {
 
+    @Autowired
+    private FilePaths filePaths;
+
     @Override
     public List<String> showDatabases(String username) {
-        File directory = new File(Storage_Path + "//" + username);
+        File directory = new File(filePaths.getStorage_Path() + "//" + username);
         if (!directory.exists())
             return Collections.emptyList();
 
@@ -34,7 +42,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public ResponseEntity<String> createDatabase(String username, String dbName) {
-        File userFile = getUserDir(username);
+        File userFile = Path.of(filePaths.getStorage_Path(), username).toFile();
 
         if (userFile.exists()) {
             try {
@@ -55,11 +63,11 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
     public ResponseEntity<String> deleteDatabase(String username, String dbName) {
-        File userFile = getUserDir(username);
+        File userFile = Path.of(filePaths.getStorage_Path(), username).toFile();
         if (userFile.exists()) {
             try {
                 File targetDbName = new File(userFile + "//" + dbName);
-                if (targetDbName.exists()){
+                if (targetDbName.exists()) {
                     FileUtils.deleteDirectory(targetDbName);
                     return getResponseEntity("Database deleted Successfully", HttpStatus.OK);
                 }
