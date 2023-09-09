@@ -1,4 +1,4 @@
-package org.worker.api.writeRequests;
+package org.worker.api.event;
 
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,7 +9,7 @@ import org.worker.api.WriteRequest;
 
 @Data
 @RequiredArgsConstructor
-public class NewEmptyCollectionRequest extends WriteRequest {
+public class NewEmptyCollectionEvent extends WriteEvent {
     private String collectionName;
     @NotNull
     private ObjectNode schema;

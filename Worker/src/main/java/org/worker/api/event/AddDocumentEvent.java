@@ -1,4 +1,4 @@
-package org.worker.api.writeRequests;
+package org.worker.api.event;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
@@ -9,7 +9,7 @@ import org.worker.api.WriteRequest;
 
 @RequiredArgsConstructor
 @Data
-public class AddDocumentRequest extends WriteRequest {
+public class AddDocumentEvent extends WriteEvent {
     @NonNull
     private String dbName;
     @NonNull

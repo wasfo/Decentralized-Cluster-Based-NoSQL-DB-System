@@ -25,21 +25,22 @@ public class DatabaseController {
     @GetMapping
     public List<String> showDatabases() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = "ahmad2@gmail.com";
+        String username = authentication.getName();
         return databaseService.showDatabases(username);
     }
 
     @PostMapping("/create")
     public ResponseEntity<String> createDatabase(@RequestBody @NotBlank @NotNull String dbName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = "ahmad2@gmail.com";
+        String username = authentication.getName();
         return databaseService.createDatabase(username, dbName);
     }
 
     @DeleteMapping
     public ResponseEntity<String> deleteDatabase(@RequestBody @NotBlank @NotNull String dbName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return databaseService.deleteDatabase(authentication.getName(), dbName);
+        String username = authentication.getName();
+        return databaseService.deleteDatabase(username, dbName);
     }
 
 }

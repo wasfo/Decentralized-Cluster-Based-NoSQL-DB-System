@@ -4,6 +4,6 @@ package org.worker.api;
 import lombok.Data;
 
 @Data
-public abstract class APIRequest {
+public abstract class WriteRequest {
     protected boolean isBroadcasted = false;
 }

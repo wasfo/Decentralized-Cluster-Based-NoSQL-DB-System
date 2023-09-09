@@ -2,16 +2,14 @@ package org.worker.api.writeRequests;
 
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.worker.api.APIRequest;
+import org.worker.api.WriteRequest;
 
 @Data
 @RequiredArgsConstructor
-@AllArgsConstructor
-public class DeleteCollectionRequest extends APIRequest {
+public class DeleteCollectionRequest extends WriteRequest {
 
     @NotNull
     private String dbName;

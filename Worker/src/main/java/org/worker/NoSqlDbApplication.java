@@ -17,26 +17,22 @@ import java.io.File;
 
 
 
-@SpringBootApplication(exclude = {EurekaClientAutoConfiguration.class,
-        EurekaDiscoveryClientConfiguration.class})
+@SpringBootApplication
 @Slf4j
 //exclude = SecurityAutoConfiguration.class
+//exclude = {EurekaClientAutoConfiguration.class,
+//        EurekaDiscoveryClientConfiguration.class}
+
 public class NoSqlDbApplication {
 
 
     public static void main(String[] args) {
         SpringApplication.run(NoSqlDbApplication.class, args);
-
-
     }
-
-
-//    @KafkaListener(topics = "UserTopic")
-//    public void receiveFromKafka(User user) {
-//        log.info("recieved from kafka this user - {}", user);
-//    }
-
-
+    @KafkaListener(topics = "UserTopic")
+    public void receiveFromKafka(User user) {
+        log.info("recieved from kafka this user - {}", user);
+    }
     static public void createStorageFileIfNotExist() {
         String root = System.getProperty("user.dir");
         String nodeName = System.getenv("node.name") + "_Storage";
