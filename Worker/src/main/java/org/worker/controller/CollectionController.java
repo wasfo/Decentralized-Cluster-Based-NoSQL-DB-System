@@ -68,7 +68,7 @@ public class CollectionController {
 
         if (DbUtils.isResponseSuccessful(response)) {
             if (!request.isBroadcasted()) {
-                broadcastService.broadCast(request, headers, "/api/collections/new",
+                broadcastService.broadCastWithHttp(request, headers, "/api/collections/new",
                         HttpMethod.POST);
             }
         }
@@ -86,7 +86,7 @@ public class CollectionController {
 
         if (DbUtils.isResponseSuccessful(response)) {
             if (!request.isBroadcasted()) {
-                broadcastService.broadCast(request, headers, "/api/collections/newEmpty",
+                broadcastService.broadCastWithHttp(request, headers, "/api/collections/newEmpty",
                         HttpMethod.POST);
             }
         }
@@ -106,7 +106,7 @@ public class CollectionController {
 
         if (DbUtils.isResponseSuccessful(response)) {
             if (!request.isBroadcasted()) {
-                broadcastService.broadCast(request,
+                broadcastService.broadCastWithHttp(request,
                         headers,
                         "/api/collections/new",
                         HttpMethod.DELETE);
@@ -134,7 +134,7 @@ public class CollectionController {
 
             if (DbUtils.isResponseSuccessful(response)) {
                 if (!request.isBroadcasted()) {
-                    broadcastService.broadCast(request,
+                    broadcastService.broadCastWithHttp(request,
                             headers,
                             "/api/collections/add/doc",
                             HttpMethod.POST);

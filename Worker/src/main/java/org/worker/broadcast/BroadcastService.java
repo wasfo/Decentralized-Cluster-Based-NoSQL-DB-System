@@ -41,10 +41,10 @@ public class BroadcastService {
         kafkaTemplate.send(topic, request);
     }
 
-    public void broadCast(WriteRequest request,
-                          HttpHeaders headers,
-                          String endpoint,
-                          HttpMethod httpMethod) {
+    public void broadCastWithHttp(WriteRequest request,
+                                  HttpHeaders headers,
+                                  String endpoint,
+                                  HttpMethod httpMethod) {
 
         request.setBroadcasted(true);
         HttpEntity<WriteRequest> entity = new HttpEntity<>(request, headers);

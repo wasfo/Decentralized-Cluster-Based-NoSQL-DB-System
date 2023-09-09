@@ -16,9 +16,9 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class KafkaListeners {
 
-    private DatabaseService databaseService;
+    private final DatabaseService databaseService;
     private DocumentService documentService;
-    private CollectionService collectionService;
+    private final CollectionService collectionService;
 
     @Autowired
     public KafkaListeners(DatabaseService databaseService,
@@ -58,6 +58,7 @@ public class KafkaListeners {
 
     @KafkaListener(topics = "deleteDocumentTopic")
     public void deleteDocument(DeleteDocumentEvent event) {
+
     }
 
     @KafkaListener(topics = "newCollectionTopic")
