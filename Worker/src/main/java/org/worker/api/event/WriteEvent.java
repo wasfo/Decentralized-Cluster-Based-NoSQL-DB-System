@@ -1,11 +1,11 @@
 package org.worker.api.event;
 
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 public abstract class WriteEvent {
-    protected boolean isBroadcasted = false;
+    protected String broadcastingNodeName;
     protected String username;
-    protected String password;
 }

@@ -3,6 +3,7 @@ package org.worker.broadcast;
 
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.worker.api.event.*;
@@ -16,6 +17,8 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class KafkaListeners {
 
+    @Value("${node.name}")
+    private String nodeName;
     private final DatabaseService databaseService;
     private DocumentService documentService;
     private final CollectionService collectionService;
@@ -31,49 +34,62 @@ public class KafkaListeners {
 
     @KafkaListener(topics = "createDatabaseTopic")
     public void createDatabase(CreateDatabaseEvent event) {
-        if (event.isBroadcasted()) {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
             databaseService.createDatabase(event.getUsername(), event.getDatabaseName());
         }
     }
 
     @KafkaListener(topics = "deleteDatabaseTopic")
     public void deleteDatabase(DeleteDatabaseEvent event) {
-        databaseService.deleteDatabase(event.getUsername(), event.getDatabaseName());
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            databaseService.deleteDatabase(event.getUsername(), event.getDatabaseName());
+        }
     }
 
     @KafkaListener(topics = "addDocumentTopic")
-    public void addDocument(AddDocumentEvent event) throws IOException, ExecutionException, InterruptedException, ProcessingException {
-        collectionService.addDocument(event.getUsername(),
-                event.getDbName(),
-                event.getCollectionName(),
-                event.getObjectNode());
+    public void addDocument(AddDocumentEvent event) throws IOException,
+            ExecutionException, InterruptedException,
+            ProcessingException {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            collectionService.addDocument(event.getUsername(),
+                    event.getDbName(),
+                    event.getCollectionName(),
+                    event.getObjectNode());
+        }
     }
 
     @KafkaListener(topics = "deleteCollectionTopic")
     public void deleteCollection(DeleteCollectionEvent event) {
-        collectionService.deleteCollection(event.getUsername(),
-                event.getDbName(),
-                event.getCollectionName());
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            collectionService.deleteCollection(event.getUsername(),
+                    event.getDbName(),
+                    event.getCollectionName());
+        }
     }
 
     @KafkaListener(topics = "deleteDocumentTopic")
     public void deleteDocument(DeleteDocumentEvent event) {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {}
 
     }
 
     @KafkaListener(topics = "newCollectionTopic")
     public void newCollection(NewCollectionEvent event) throws IOException {
-        collectionService.writeCollection(event.getSchema(),
-                event.getUsername(),
-                event.getDbName(),
-                event.getCollection());
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            collectionService.writeCollection(event.getSchema(),
+                    event.getUsername(),
+                    event.getDbName(),
+                    event.getCollection());
+        }
     }
 
     @KafkaListener(topics = "newEmptyCollectionTopic")
     public void newEmptyCollection(NewEmptyCollectionEvent event) throws IOException {
-        collectionService.createNewEmptyCollection(event.getSchema(),
-                event.getUsername(),
-                event.getDbName(),
-                event.getCollectionName());
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            collectionService.createNewEmptyCollection(event.getSchema(),
+                    event.getUsername(),
+                    event.getDbName(),
+                    event.getCollectionName());
+        }
     }
 }

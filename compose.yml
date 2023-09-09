@@ -42,6 +42,24 @@ services:
       - broker
     links:
       - eureka-server
+  node3:
+    build: ./Worker
+    container_name: node3
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:9090/eureka
+      - spring.application.name=Node
+      - node.name=Node3
+      - server.port=8083
+    volumes:
+      - ./Storage/Node3-Storage:/Storage/Node3-Storage
+      - ./Storage/Node3-Storage/users.json:/Storage/Node3-Storage/users.json
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+      - broker
+    links:
+      - eureka-server
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

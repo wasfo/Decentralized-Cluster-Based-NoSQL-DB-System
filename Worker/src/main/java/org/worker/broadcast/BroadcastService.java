@@ -12,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.worker.api.WriteRequest;
+import org.worker.api.event.WriteEvent;
 import org.worker.node.Node;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class BroadcastService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
-    private KafkaTemplate<String, WriteRequest> kafkaTemplate;
+    private KafkaTemplate<String, WriteEvent> kafkaTemplate;
     private static final Logger logger = LoggerFactory.getLogger(BroadcastService.class);
     private final List<Node> nodes;
 
@@ -37,8 +38,8 @@ public class BroadcastService {
         this.nodes = nodes;
     }
 
-    public void broadCastWithKafka(String topic, WriteRequest request) {
-        kafkaTemplate.send(topic, request);
+    public void broadCastWithKafka(Topic topic, WriteEvent event) {
+        kafkaTemplate.send(topic.getTopicValue(), event);
     }
 
     public void broadCastWithHttp(WriteRequest request,
