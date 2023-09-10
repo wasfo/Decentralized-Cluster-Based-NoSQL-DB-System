@@ -28,6 +28,8 @@ import org.worker.utils.DbUtils;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static org.worker.utils.DbUtils.getResponseEntity;
+
 @Controller
 @RequestMapping("/api/documents")
 public class DocumentController {
@@ -74,6 +76,8 @@ public class DocumentController {
     public <T> ResponseEntity<String> deleteDocumentMany(@RequestBody DeleteAllDocumentsRequest<T> request)
             throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        //TODO deleteMany method needs some fixes regarding (class casting) probably.
         ResponseEntity<String> response = documentService.deleteMany(request.getCriteria(),
                 username,
                 request.getDbName(),
@@ -81,6 +85,7 @@ public class DocumentController {
 
         if (DbUtils.isResponseSuccessful(response)) {
             DeleteAllDocumentsEvent<T> event = new DeleteAllDocumentsEvent<>();
+            event.setBroadcastingNodeName(broadcastService.nodeName);
             event.setCriteria(request.getCriteria());
             event.setUsername(username);
             event.setDbName(request.getDbName());
@@ -89,6 +94,7 @@ public class DocumentController {
         }
 
         return response;
+
     }
 
     @PostMapping("/add")

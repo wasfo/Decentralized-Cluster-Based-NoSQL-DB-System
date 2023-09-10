@@ -94,6 +94,7 @@ public class KafkaListeners {
 
     @KafkaListener(topics = "deleteAllDocumentsTopic")
     public <T> void deleteAllDocuments(DeleteAllDocumentsEvent<T> event) throws IOException {
+
         if (!event.getBroadcastingNodeName().equals(nodeName)) {
             documentService.deleteMany(event.getCriteria(), event.getUsername(),
                     event.getDbName(), event.getCollectionName());
