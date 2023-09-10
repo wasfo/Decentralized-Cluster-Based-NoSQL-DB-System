@@ -2,8 +2,11 @@ package org.worker.controller;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.worker.api.event.CreateDatabaseEvent;
 import org.worker.api.event.DeleteDatabaseEvent;
+import org.worker.api.writeRequests.CreateDatabaseRequest;
+import org.worker.api.writeRequests.DeleteDatabaseRequest;
 import org.worker.broadcast.BroadcastService;
 import org.worker.broadcast.Topic;
 import org.worker.services.DatabaseService;
@@ -23,8 +26,9 @@ public class DatabaseController {
     private final DatabaseService databaseService;
     private final BroadcastService broadcastService;
 
+    @Value("${node.name}")
+    private String nodeName;
     @Autowired
-
     public DatabaseController(DatabaseService databaseService, BroadcastService broadcastService) {
         this.databaseService = databaseService;
         this.broadcastService = broadcastService;
@@ -39,28 +43,30 @@ public class DatabaseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> createDatabase(@RequestBody @NotBlank @NotNull String dbName) {
+    public ResponseEntity<String> createDatabase(@RequestBody CreateDatabaseRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        ResponseEntity<String> response = databaseService.createDatabase(username, dbName);
+        ResponseEntity<String> response = databaseService.createDatabase(username, request.getDbName());
         if (DbUtils.isResponseSuccessful(response)) {
             CreateDatabaseEvent event = new CreateDatabaseEvent();
+            event.setBroadcastingNodeName(nodeName);
             event.setUsername(username);
-            event.setDatabaseName(dbName);
+            event.setDatabaseName(request.getDbName());
             broadcastService.broadCastWithKafka(Topic.Create_Database_Topic, event);
         }
         return response;
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteDatabase(@RequestBody @NotBlank @NotNull String dbName) {
+    public ResponseEntity<String> deleteDatabase(@RequestBody DeleteDatabaseRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        ResponseEntity<String> response = databaseService.deleteDatabase(username, dbName);
+        ResponseEntity<String> response = databaseService.deleteDatabase(username, request.getDbName());
         if (DbUtils.isResponseSuccessful(response)) {
             DeleteDatabaseEvent event = new DeleteDatabaseEvent();
+            event.setBroadcastingNodeName(nodeName);
             event.setUsername(username);
-            event.setDatabaseName(dbName);
+            event.setDatabaseName(request.getDbName());
             broadcastService.broadCastWithKafka(Topic.Delete_Database_Topic, event);
         }
         return response;
