@@ -7,9 +7,7 @@ import org.worker.models.Document;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public interface CollectionService {
@@ -19,7 +17,8 @@ public interface CollectionService {
 
     public ResponseEntity<String> writeCollection(ObjectNode schema, String userDir, String DbName, Collection collection) throws IOException;
 
-    public ResponseEntity<String> createNewEmptyCollection(ObjectNode schema, String userDir, String dbName,String collectionName) throws IOException;
+    public ResponseEntity<String> createNewEmptyCollection(ObjectNode schema, String username,
+                                                           String dbName, String collectionName) throws IOException;
 
     public ResponseEntity<String> addDocument(String userDir, String dbName, String collectionName, ObjectNode objectNode) throws IOException, ProcessingException, ExecutionException, InterruptedException;
 

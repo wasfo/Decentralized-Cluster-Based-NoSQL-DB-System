@@ -4,18 +4,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.worker.constants.FilePaths;
 import org.worker.models.Collection;
 import org.worker.models.Document;
 import org.worker.services.CollectionService;
-import org.worker.services.JsonService;
 import org.worker.utils.SchemaValidator;
 
 import java.io.File;
@@ -33,11 +34,11 @@ import static org.worker.utils.DbUtils.getResponseEntity;
 @Service
 public class CollectionServiceImpl implements CollectionService {
 
-
-
+    @Value("${node.name}")
+    private String nodeName;
     private String storagePath;
 
-    public CollectionServiceImpl(@Qualifier("storagePath")String storagePath) {
+    public CollectionServiceImpl(@Qualifier("storagePath") String storagePath) {
         this.storagePath = storagePath;
     }
 
@@ -113,6 +114,7 @@ public class CollectionServiceImpl implements CollectionService {
                                                            String userDir,
                                                            String dbName,
                                                            String collectionName) throws IOException {
+
         if (schema.isEmpty()) {
             return getResponseEntity("schema must be specified",
                     HttpStatus.BAD_REQUEST);
@@ -127,7 +129,7 @@ public class CollectionServiceImpl implements CollectionService {
             collectionDirectory.toFile().mkdir();
         }
 
-        Path collectionPath = Path.of(storagePath, userDir, dbName,collectionName,
+        Path collectionPath = Path.of(storagePath, userDir, dbName, collectionName,
                 collectionName + ".json");
         Path schemaPath = Path.of(storagePath, userDir, dbName,
                 collectionName, "schema.json");

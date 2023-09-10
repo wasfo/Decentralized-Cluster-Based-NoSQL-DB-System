@@ -1,17 +1,17 @@
 package org.worker.api.writeRequests;
 
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
+import org.worker.models.JsonProperty;
 
 @Data
 @RequiredArgsConstructor
-public class DeleteDocumentRequest extends WriteRequest {
+public class DeleteAllDocumentsRequest<T> extends WriteRequest {
 
-
+    private JsonProperty<T> criteria;
     @NonNull
     private String dbName;
     @NonNull

@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public abstract class WriteRequest {
-    protected boolean isBroadcasted = false;
+
 }

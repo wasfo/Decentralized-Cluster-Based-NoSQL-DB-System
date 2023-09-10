@@ -100,6 +100,7 @@ public class CollectionController {
             event.setSchema(request.getSchema());
             event.setDbName(request.getDbName());
             event.setBroadcastingNodeName(nodeName);
+            event.setUsername(username);
             broadcastService.broadCastWithKafka(Topic.New_Empty_Collection_Topic, event);
         }
 
@@ -116,13 +117,12 @@ public class CollectionController {
                 request.getDbName(), request.getCollectionName());
 
         if (DbUtils.isResponseSuccessful(response)) {
-            if (!request.isBroadcasted()) {
-                broadcastService.broadCastWithHttp(request,
-                        headers,
-                        "/api/collections/new",
-                        HttpMethod.DELETE);
-            }
+            broadcastService.broadCastWithHttp(request,
+                    headers,
+                    "/api/collections/new",
+                    HttpMethod.DELETE);
         }
+
         return response;
 
     }
@@ -144,12 +144,10 @@ public class CollectionController {
 
 
             if (DbUtils.isResponseSuccessful(response)) {
-                if (!request.isBroadcasted()) {
-                    broadcastService.broadCastWithHttp(request,
-                            headers,
-                            "/api/collections/add/doc",
-                            HttpMethod.POST);
-                }
+                broadcastService.broadCastWithHttp(request,
+                        headers,
+                        "/api/collections/add/doc",
+                        HttpMethod.POST);
             }
             return response;
 

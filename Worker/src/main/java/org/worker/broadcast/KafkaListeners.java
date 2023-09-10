@@ -5,6 +5,9 @@ import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.worker.api.event.*;
 import org.worker.services.CollectionService;
@@ -68,8 +71,21 @@ public class KafkaListeners {
     }
 
     @KafkaListener(topics = "deleteDocumentTopic")
-    public void deleteDocument(DeleteDocumentEvent event) {
-        if (!event.getBroadcastingNodeName().equals(nodeName)) {}
+    public void deleteDocument(DeleteDocumentEvent event) throws IOException {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+
+            documentService.deleteById(event.getDocumentId(), event.getUsername(),
+                    event.getDbName(), event.getCollectionName());
+        }
+
+    }
+
+    @KafkaListener(topics = "deleteAllDocumentsTopic")
+    public <T> void deleteAllDocuments(DeleteAllDocumentsEvent<T> event) throws IOException {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            documentService.deleteMany(event.getCriteria(), event.getUsername(),
+                    event.getDbName(), event.getCollectionName());
+        }
 
     }
 

@@ -71,7 +71,9 @@ public class DocumentServiceImpl implements DocumentService {
                                              String userDir,
                                              String dbName,
                                              String collectionName) throws IOException {
-        String path = String.valueOf(Path.of(userDir, dbName, collectionName));
+        String path = String.valueOf(Path.of(userDir, dbName,
+                collectionName, collectionName + ".json"));
+
         boolean isDeleted = jsonService.deleteFirst(path, new JsonProperty<>("_id", targetId));
         if (isDeleted) {
             return getResponseEntity("document deleted successfully", HttpStatus.OK);

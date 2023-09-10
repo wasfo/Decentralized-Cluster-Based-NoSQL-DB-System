@@ -9,7 +9,6 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
 
-@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @Data
 public class NewEmptyCollectionEvent extends WriteEvent {
@@ -18,4 +17,6 @@ public class NewEmptyCollectionEvent extends WriteEvent {
     private ObjectNode schema;
     @NotNull
     private String dbName;
+
+    private String username;
 }

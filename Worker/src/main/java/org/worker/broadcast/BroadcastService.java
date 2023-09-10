@@ -47,7 +47,6 @@ public class BroadcastService {
                                   String endpoint,
                                   HttpMethod httpMethod) {
 
-        request.setBroadcasted(true);
         HttpEntity<WriteRequest> entity = new HttpEntity<>(request, headers);
         for (Node node : nodes) {
             if (node.getHostname().equals(nodeName))
