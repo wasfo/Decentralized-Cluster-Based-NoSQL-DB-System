@@ -3,6 +3,7 @@ package org.worker.broadcast;
 public enum Topic {
 
     Create_Database_Topic("createDatabaseTopic"),
+    Register_User_Topic("registerUserTopic"),
     Delete_Database_Topic("deleteDatabaseTopic"),
     Add_Document_Topic("addDocumentTopic"),
     Delete_Collection_Topic("deleteCollectionTopic"),

@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.worker.api.event.*;
+import org.worker.repository.Implementation.UsersRepoService;
 import org.worker.services.CollectionService;
 import org.worker.services.DatabaseService;
 import org.worker.services.DocumentService;
@@ -23,16 +24,27 @@ public class KafkaListeners {
     @Value("${node.name}")
     private String nodeName;
     private final DatabaseService databaseService;
-    private DocumentService documentService;
+    private final DocumentService documentService;
     private final CollectionService collectionService;
+    private final UsersRepoService usersRepoService;
 
     @Autowired
     public KafkaListeners(DatabaseService databaseService,
                           DocumentService documentService,
-                          CollectionService collectionService) {
+                          CollectionService collectionService,
+                          UsersRepoService usersRepoService) {
         this.databaseService = databaseService;
         this.documentService = documentService;
         this.collectionService = collectionService;
+        this.usersRepoService = usersRepoService;
+    }
+    //registerUserTopic
+
+    @KafkaListener(topics = "registerUserTopic")
+    public void registerUser(RegistrationEvent event) {
+        if (!event.getBroadcastingNodeName().equals(nodeName)) {
+            usersRepoService.save(event.getUser());
+        }
     }
 
     @KafkaListener(topics = "createDatabaseTopic")

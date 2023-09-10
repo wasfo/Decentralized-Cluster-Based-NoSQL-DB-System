@@ -17,7 +17,6 @@ public class Config {
     public RestTemplate writeQueriesTemplate() {
         return new RestTemplate();
     }
-
     @Bean("registerTemplate")
     @LoadBalanced
     public RestTemplate registerTemplate() {

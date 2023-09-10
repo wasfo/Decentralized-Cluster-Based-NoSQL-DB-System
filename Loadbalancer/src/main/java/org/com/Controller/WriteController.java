@@ -25,8 +25,7 @@ import static org.com.url.Urls.*;
 public class WriteController {
 
     private RestTemplate restTemplate;
-    @Autowired
-    private KafkaTemplate<String, User> kafkaTemplate;
+
     private final String nodeUrl = "http://NODE";
 
 
@@ -34,12 +33,6 @@ public class WriteController {
     public WriteController(@Qualifier("writeTemplate") RestTemplate restTemplate ) {
         this.restTemplate = restTemplate;
 
-    }
-
-    @GetMapping("/sendWithKafka")
-    public void sendWithKafka() {
-        User user = new User("potato","1234567", new ArrayList<>(List.of(Role.USER)));
-        kafkaTemplate.send("UserTopic", user);
     }
 
     @GetMapping("/hello")
