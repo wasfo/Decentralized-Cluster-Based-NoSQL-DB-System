@@ -12,5 +12,12 @@
     "roles": [
       "USER"
     ]
+  },
+  {
+    "username": "alosh",
+    "password": "fuck",
+    "roles": [
+      "USER"
+    ]
   }
 ]

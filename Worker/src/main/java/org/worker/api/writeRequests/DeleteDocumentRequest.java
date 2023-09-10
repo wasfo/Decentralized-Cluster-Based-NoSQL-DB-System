@@ -2,18 +2,19 @@ package org.worker.api.writeRequests;
 
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class DeleteDocumentRequest extends WriteRequest {
 
-
+    @NotNull
+    private String docId;
     @NonNull
     private String dbName;
     @NonNull
     private String collectionName;
+
+
 }

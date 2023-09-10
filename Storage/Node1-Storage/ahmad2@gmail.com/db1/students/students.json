@@ -21,13 +21,6 @@
         "name": "Maryam",
         "age": "23"
       }
-    },
-    {
-      "_id": "6cc1d719-4903-45de-9ff8-1efca2cf1953",
-      "objectNode": {
-        "name": "potato",
-        "age": 13
-      }
     }
   ]
 }

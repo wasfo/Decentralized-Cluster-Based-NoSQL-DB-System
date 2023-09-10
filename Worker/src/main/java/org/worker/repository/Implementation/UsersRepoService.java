@@ -69,9 +69,7 @@ public class UsersRepoService implements UsersRepository {
 
     @Override
     public List<User> readUsers() {
-        System.out.println("USERS PATH INSIDE READ USERS ->" + usersPath);
         try {
-
             File file = new File(usersPath);
             List<User> users = objectMapper.readValue(file, typeReference);
             return users;

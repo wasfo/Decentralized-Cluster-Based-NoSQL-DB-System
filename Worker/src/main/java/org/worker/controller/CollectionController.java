@@ -1,21 +1,17 @@
 package org.worker.controller;
 
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.worker.api.event.DeleteCollectionEvent;
 import org.worker.api.event.NewCollectionEvent;
 import org.worker.api.event.NewEmptyCollectionEvent;
 import org.worker.api.readRequests.ReadCollectionRequest;
-import org.worker.api.writeRequests.AddDocumentRequest;
 import org.worker.api.writeRequests.DeleteCollectionRequest;
 import org.worker.api.writeRequests.NewCollectionRequest;
 import org.worker.api.writeRequests.NewEmptyCollectionRequest;
@@ -27,7 +23,6 @@ import org.worker.utils.DbUtils;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 
 @RestController
@@ -61,7 +56,6 @@ public class CollectionController {
 
     @PostMapping("/new")
     public ResponseEntity<String> createNewCollection(@RequestBody @Validated NewCollectionRequest request,
-                                                      @RequestHeader HttpHeaders headers,
                                                       BindingResult bindingResult) throws IOException {
         if (bindingResult.hasErrors()) {
             return DbUtils.getResponseEntity("incorrect new collection request",
@@ -86,8 +80,7 @@ public class CollectionController {
     }
 
     @PostMapping("/newEmpty")
-    public ResponseEntity<String> createNewEmptyCollection(@RequestBody NewEmptyCollectionRequest request,
-                                                           @RequestHeader HttpHeaders headers) throws IOException {
+    public ResponseEntity<String> createNewEmptyCollection(@RequestBody NewEmptyCollectionRequest request) throws IOException {
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         ResponseEntity<String> response = collectionService.createNewEmptyCollection(request.getSchema(),
@@ -108,54 +101,25 @@ public class CollectionController {
     }
 
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request,
-                                                   @RequestHeader HttpHeaders headers) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+    @PostMapping("/delete")
+    public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request) {
+
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("USERNAME  IS -> " + username);
         ResponseEntity<String> response = collectionService.deleteCollection(username,
                 request.getDbName(), request.getCollectionName());
-
         if (DbUtils.isResponseSuccessful(response)) {
-            broadcastService.broadCastWithHttp(request,
-                    headers,
-                    "/api/collections/new",
-                    HttpMethod.DELETE);
+            DeleteCollectionEvent event = new DeleteCollectionEvent();
+            event.setBroadcastingNodeName(nodeName);
+            event.setUsername(username);
+            event.setDbName(request.getDbName());
+            event.setCollectionName(request.getCollectionName());
+            broadcastService.broadCastWithKafka(Topic.Delete_Collection_Topic, event);
         }
-
         return response;
 
     }
 
-    @PostMapping("/add/doc")
-    public ResponseEntity<String> addDocument(@RequestBody @Validated AddDocumentRequest request,
-                                              @RequestHeader HttpHeaders headers,
-                                              BindingResult bindingResult) throws ExecutionException {
-
-        if (bindingResult.hasErrors()) {
-            return DbUtils.getResponseEntity("incorrect fields at adding document request",
-                    HttpStatus.BAD_REQUEST);
-        }
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
-            ResponseEntity<String> response = collectionService.addDocument(username, request.getDbName(),
-                    request.getCollectionName(), request.getObjectNode());
-
-
-            if (DbUtils.isResponseSuccessful(response)) {
-                broadcastService.broadCastWithHttp(request,
-                        headers,
-                        "/api/collections/add/doc",
-                        HttpMethod.POST);
-            }
-            return response;
-
-        } catch (IOException | ProcessingException | InterruptedException e) {
-            return DbUtils.getResponseEntity("something went" +
-                    " wrong adding new document", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
 
 }

@@ -35,6 +35,5 @@ public class IndexObject {
     @Override
     public String toString() {
         return "(" + collectionName + ", " + fieldName + ", " + value + ")";
-
     }
 }

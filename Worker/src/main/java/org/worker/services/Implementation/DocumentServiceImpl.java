@@ -1,6 +1,7 @@
 package org.worker.services.Implementation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.worker.models.Collection;
 import org.worker.models.Document;
 import org.worker.models.JsonProperty;
@@ -27,10 +28,13 @@ public class DocumentServiceImpl implements DocumentService {
     private final JsonService jsonService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final CollectionService collectionService;
+    private String storagePath;
 
 
     @Autowired
-    public DocumentServiceImpl(JsonService jsonService, CollectionService collectionService) {
+    public DocumentServiceImpl(@Qualifier("storagePath") String storagePath,
+                               JsonService jsonService, CollectionService collectionService) {
+        this.storagePath = storagePath;
         this.jsonService = jsonService;
         this.collectionService = collectionService;
     }
@@ -71,7 +75,7 @@ public class DocumentServiceImpl implements DocumentService {
                                              String userDir,
                                              String dbName,
                                              String collectionName) throws IOException {
-        String path = String.valueOf(Path.of(userDir, dbName,
+        String path = String.valueOf(Path.of(storagePath, userDir, dbName,
                 collectionName, collectionName + ".json"));
 
         boolean isDeleted = jsonService.deleteFirst(path, new JsonProperty<>("_id", targetId));

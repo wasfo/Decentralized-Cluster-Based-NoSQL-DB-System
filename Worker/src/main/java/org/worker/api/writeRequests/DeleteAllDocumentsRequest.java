@@ -1,14 +1,13 @@
 package org.worker.api.writeRequests;
 
 
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 import org.worker.models.JsonProperty;
 
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
+
 public class DeleteAllDocumentsRequest<T> extends WriteRequest {
 
     private JsonProperty<T> criteria;

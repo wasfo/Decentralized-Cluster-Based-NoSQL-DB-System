@@ -1,14 +1,13 @@
 package org.worker.api.writeRequests;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 
 
-@RequiredArgsConstructor
+
 @Data
+@NoArgsConstructor
 public class AddDocumentRequest extends WriteRequest {
     @NonNull
     private String dbName;

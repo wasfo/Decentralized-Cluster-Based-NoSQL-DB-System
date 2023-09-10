@@ -1,4 +1,5 @@
 package org.worker.services.Implementation;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -12,6 +13,7 @@ import org.worker.models.JsonProperty;
 import org.worker.services.JsonService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,7 +66,7 @@ public class JsonServiceImpl implements JsonService {
         if (rootNode.isPresent()) {
             ObjectMapper mapper = new ObjectMapper();
             for (JsonNode jsonNode : rootNode.get()) {
-                Document document  = mapper.convertValue(jsonNode, Document.class);
+                Document document = mapper.convertValue(jsonNode, Document.class);
                 documents.add(document);
             }
             collection.setDocuments(documents);
@@ -103,14 +105,19 @@ public class JsonServiceImpl implements JsonService {
 
             String keyToDelete = jsonProperty.getKey();
             Object valueToDelete = jsonProperty.getValue();
-
-            ArrayNode arrayNode = (ArrayNode) rootNode;
+            ArrayNode arrayNode = (ArrayNode) rootNode.get("documents");
+            if (arrayNode.isEmpty())
+                return false;
             for (int i = 0; i < arrayNode.size(); i++) {
                 JsonNode jsonNode = arrayNode.get(i);
-                if (jsonNode.has(keyToDelete) && jsonNode.get(keyToDelete).asText().equals(valueToDelete)) {
-                    arrayNode.remove(i);
-                    objectMapper.writeValue(jsonFile, arrayNode);
-                    return true;
+                if (jsonNode.has(keyToDelete)) {
+                    String foundValue = jsonNode.get(keyToDelete).asText();
+                    if (foundValue.equals(valueToDelete)) {
+                        ((ArrayNode) rootNode.get("documents")).remove(i);
+                        objectMapper.writeValue(jsonFile, rootNode);
+                        return true;
+                    }
+
                 }
             }
 
@@ -133,11 +140,13 @@ public class JsonServiceImpl implements JsonService {
                 ArrayNode arrayNode = (ArrayNode) rootNode;
                 for (int i = 0; i < arrayNode.size(); i++) {
                     JsonNode jsonNode = arrayNode.get(i);
-                    if (jsonNode.has(keyToDelete) && jsonNode.get(keyToDelete).asText().equals(valueToDelete)) {
-                        arrayNode.remove(i);
+                    if (jsonNode.has(keyToDelete) &&
+                            jsonNode.get(keyToDelete).asText().equals(valueToDelete)) {
+
+                        ((ArrayNode) rootNode.get("documents")).remove(i);
+                        objectMapper.writeValue(jsonFile, rootNode);
                     }
                 }
-                objectMapper.writeValue(jsonFile, arrayNode);
             }
         }
     }

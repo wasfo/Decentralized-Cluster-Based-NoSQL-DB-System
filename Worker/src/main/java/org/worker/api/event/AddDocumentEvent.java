@@ -11,10 +11,10 @@ import org.worker.api.WriteRequest;
 @RequiredArgsConstructor
 @Data
 public class AddDocumentEvent extends WriteEvent {
-    @NonNull
+
     private String dbName;
-    @NonNull
+
     private String collectionName;
-    @NonNull
+
     private ObjectNode objectNode;
 }

@@ -43,7 +43,9 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(configurer ->
                 {
-                    configurer.requestMatchers("/admin/unprotected").permitAll()
+                    configurer
+                            .requestMatchers("/admin/unprotected").permitAll()
+                            .requestMatchers("/api/register").permitAll()
                             .anyRequest().authenticated();
                 }
         ).httpBasic(Customizer.withDefaults())
