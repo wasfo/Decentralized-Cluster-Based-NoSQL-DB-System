@@ -66,7 +66,7 @@ public class KafkaListeners {
             ExecutionException, InterruptedException,
             ProcessingException {
         if (!event.getBroadcastingNodeName().equals(nodeName)) {
-            collectionService.addDocument(event.getUsername(),
+            documentService.addDocumentToCollection(event.getUsername(),
                     event.getDbName(),
                     event.getCollectionName(),
                     event.getObjectNode());

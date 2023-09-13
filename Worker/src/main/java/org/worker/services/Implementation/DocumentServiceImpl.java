@@ -1,6 +1,8 @@
 package org.worker.services.Implementation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.worker.models.Collection;
 import org.worker.models.Document;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.worker.utils.SchemaValidator;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -48,7 +51,7 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<?> readDocumentById(String userDir,
                                               String dbName,
                                               String collectionName,
-                                              String id) throws IOException{
+                                              String id) throws IOException {
 
         Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName);
         if (collection.isPresent()) {
@@ -89,6 +92,37 @@ public class DocumentServiceImpl implements DocumentService {
         }
         return getResponseEntity("something went wrong in deleting this document with id: "
                 + targetId, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<String> addDocumentToCollection(String userDir, String dbName,
+                                              String collectionName,
+                                              ObjectNode objectNode) throws IOException, ProcessingException {
+        // I should Create Data validation here.
+        Path collectionPath = Path.of(storagePath, userDir, dbName, collectionName, collectionName + ".json");
+        System.out.println("PATH -> " + collectionPath);
+        if (!collectionPath.toFile().exists()) {
+            return getResponseEntity("Collection with this Name does not exist",
+                    HttpStatus.BAD_REQUEST);
+        }
+        ObjectNode schemaNode = collectionService.readSchema(userDir, dbName, collectionName);
+        Document document = Document.createEmptyDocument();
+        document.setObjectNode(objectNode);
+        System.out.println("document ->" + document);
+        // replace with schema validator
+        boolean isValidDocument = SchemaValidator.isValidDocument(schemaNode, document);
+        System.out.println("is valid document -> " + isValidDocument);
+        if (!isValidDocument)
+            return getResponseEntity("Document fields does not follow the schema structure",
+                    HttpStatus.BAD_REQUEST);
+        else {
+            Collection collection = collectionService.readCollection(userDir, dbName, collectionName).get();
+            collection.addDocument(document);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(collectionPath.toFile(), collection);
+            return getResponseEntity("Document added Successfully",
+                    HttpStatus.CREATED);
+        }
     }
 
     @Override

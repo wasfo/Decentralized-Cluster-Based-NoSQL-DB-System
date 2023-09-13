@@ -14,9 +14,9 @@ import java.util.concurrent.ExecutionException;
 public interface DocumentService {
 
     public ResponseEntity<?> readDocumentById(String userDir,
-                                                   String dbName,
-                                                   String collectionName,
-                                                   String id) throws IOException, ProcessingException, ExecutionException, InterruptedException;
+                                              String dbName,
+                                              String collectionName,
+                                              String id) throws IOException, ProcessingException, ExecutionException, InterruptedException;
 
     public ResponseEntity<List<Document>> readDocumentsByCriteria(String userDir,
                                                                   String dbName,
@@ -32,5 +32,9 @@ public interface DocumentService {
                                                  String userDir,
                                                  String dbName,
                                                  String collectionName) throws IOException;
+
+    ResponseEntity<String> addDocumentToCollection(String userDir, String dbName,
+                                                   String collectionName,
+                                                   ObjectNode objectNode) throws IOException, ProcessingException;
 
 }

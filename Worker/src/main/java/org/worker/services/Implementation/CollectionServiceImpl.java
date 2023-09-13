@@ -152,45 +152,7 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
 
-    @Override
-    public ResponseEntity<String> addDocument(String userDir, String dbName,
-                                              String collectionName,
-                                              ObjectNode objectNode) throws IOException, ProcessingException, ExecutionException, InterruptedException {
-        // I should Create Data validation here.
-        Path collectionPath = Path.of(storagePath, userDir, dbName, collectionName, collectionName + ".json");
-        System.out.println("PATH -> " + collectionPath);
-        if (!collectionPath.toFile().exists()) {
-            return getResponseEntity("Collection with this Name does not exist",
-                    HttpStatus.BAD_REQUEST);
-        }
-        ObjectNode schemaNode = readSchema(userDir, dbName, collectionName);
-        Document document = Document.createEmptyDocument();
-        document.setObjectNode(objectNode);
-        System.out.println("document ->" + document);
-        // replace with schema validator
-        boolean isValidDocument = SchemaValidator.isValidDocument(schemaNode, document);
-        System.out.println("is valid document -> " + isValidDocument);
-        if (!isValidDocument)
-            return getResponseEntity("Document fields does not follow the schema structure",
-                    HttpStatus.BAD_REQUEST);
-        else {
-            Collection collection = readCollection(userDir, dbName, collectionName).get();
-            collection.addDocument(document);
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(collectionPath.toFile(), collection);
-            return getResponseEntity("Document added Successfully",
-                    HttpStatus.CREATED);
-        }
-    }
 
-    @Override
-    public ResponseEntity<String> deleteDocument(String userDir,
-                                                 String dbName,
-                                                 String collectionName,
-                                                 Document document) {
-
-        return null;
-    }
 
     @Override
     public ObjectNode readSchema(String userDir, String dbName, String collectionName) throws IOException {

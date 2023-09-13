@@ -107,7 +107,7 @@ public class DocumentController {
         }
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            ResponseEntity<String> response = collectionService.addDocument(username, request.getDbName(),
+            ResponseEntity<String> response = documentService.addDocumentToCollection(username, request.getDbName(),
                     request.getCollectionName(), request.getObjectNode());
 
             if (DbUtils.isResponseSuccessful(response)) {
@@ -120,7 +120,7 @@ public class DocumentController {
             }
             return response;
 
-        } catch (IOException | ProcessingException | InterruptedException e) {
+        } catch (IOException | ProcessingException e) {
             return DbUtils.getResponseEntity("something went" +
                     " wrong adding new document", HttpStatus.INTERNAL_SERVER_ERROR);
         }
