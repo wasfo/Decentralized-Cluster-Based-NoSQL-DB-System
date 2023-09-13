@@ -33,6 +33,7 @@ public class IndexingController {
     @PostMapping("/create")
     public ResponseEntity<String> createIndex(@RequestBody IndexRequest request) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("users indexes map ->" + usersIndexesMap);
 
         return indexingService.createIndex(username,
                 request.getDbName(),

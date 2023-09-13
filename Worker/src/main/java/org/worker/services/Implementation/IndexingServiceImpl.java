@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -36,8 +37,7 @@ import java.util.*;
 @Slf4j
 
 public class IndexingServiceImpl implements IndexingService {
-    private final HashMap<String,
-            HashMap<IndexObject, List<String>>> usersIndexesMap;
+    private final HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
     private final CollectionService collectionService;
     private @Qualifier("storagePath") String storage_Path;
@@ -50,7 +50,9 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public ResponseEntity<String> createIndex(String username, String dbName, String collectionName,
+    public ResponseEntity<String> createIndex(String username,
+                                              String dbName,
+                                              String collectionName,
                                               String fieldName) throws IOException {
         ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
         Path collectionDirectory = Path.of(storage_Path, username, dbName, collectionName);
@@ -124,27 +126,76 @@ public class IndexingServiceImpl implements IndexingService {
                             String collectionName,
                             String fieldName) {
 
+        removeIndexFromMap(userDir, dbName, collectionName, fieldName);
+        removeIndexFromFile(userDir, dbName, collectionName, fieldName);
+
+    }
+
+
+    private void removeIndexFromFile(String userDir,
+                                     String dbName,
+                                     String collectionName,
+                                     String fieldName) {
+        Path indexesFilePath = Path.of(storage_Path,
+                dbName,
+                collectionName,
+                "indexes.json");
+
+
+    }
+
+    private void removeIndexFromMap(String username,
+                                    String dbName,
+                                    String collectionName,
+                                    String fieldName) {
+        IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, null);
+        HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
+
+        List<IndexObject> foundIndexes = indexingMap.keySet().stream().filter(
+                entry ->
+                        entry.getDbName().equals(indexObject.getDbName()) &&
+                                entry.getCollectionName().equals(indexObject.getCollectionName()) &&
+                                entry.getFieldName().equals(indexObject.getFieldName())
+        ).toList();
+
+        // foundIndexes.forEach(indexingMap::remove);
+
+        for (IndexObject index : foundIndexes) {
+            indexingMap.remove(index);
+        }
+
+
     }
 
     @Override
-    public HashMap<IndexObject, List<String>> readIndex(String userDir,
-                                                        String dbName,
-                                                        String collectionName,
-                                                        String fieldName) throws IOException {
-        return null;
+    public List<Map.Entry<IndexObject, List<String>>> readIndex(String username,
+                                                                String dbName,
+                                                                String collectionName,
+                                                                String fieldName) {
+        IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, null);
+        HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
+        List<Map.Entry<IndexObject, List<String>>> entries = indexingMap.entrySet().stream().filter(
+                entry ->
+                        entry.getKey().getDbName().equals(indexObject.getDbName()) &&
+                                entry.getKey().getCollectionName().equals(indexObject.getCollectionName()) &&
+                                entry.getKey().getFieldName().equals(indexObject.getFieldName())
+        ).toList();
+
+        return entries;
     }
 
 
     private static ResponseEntity<String> fieldNameExists(String fieldName, ObjectNode schema) {
         if (!schema.has(fieldName)) {
-            return DbUtils.getResponseEntity("collection doesn't have the field name specified",
+            return DbUtils.getResponseEntity("collection doesn't have" +
+                            " the field name specified",
                     HttpStatus.BAD_REQUEST);
         }
         return null;
     }
 
     static private boolean indexAlreadyExists(Path pathOfCollectionDir, IndexObject targetObject) {
-        Path path = Path.of(pathOfCollectionDir.toString(), "index.json");
+        Path path = Path.of(pathOfCollectionDir.toString(), "indexes.json");
         TypeReference<List<IndexObject>> typeReference = new TypeReference<>() {
         };
         ObjectMapper mapper = new ObjectMapper();
@@ -159,5 +210,19 @@ public class IndexingServiceImpl implements IndexingService {
                         indexObject.getDbName().equals(targetObject.getDbName()) &&
                                 indexObject.getCollectionName().equals(targetObject.getCollectionName()) &&
                                 indexObject.getFieldName().equals(targetObject.getFieldName()));
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        Path storagePath = Path.of(
+                "Storage",
+                "Node1" + "-Storage");
+        Path path = Path.of(storagePath.toString(), "ahmad2@gmail.com", "db1", "students");
+        IndexObject indexObject = new IndexObject("db1",
+                "students",
+                "age",
+                null);
+
+        System.out.println(indexAlreadyExists(path, indexObject));
     }
 }

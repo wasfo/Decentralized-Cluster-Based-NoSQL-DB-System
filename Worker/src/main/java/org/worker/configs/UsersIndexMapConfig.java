@@ -1,10 +1,13 @@
 package org.worker.configs;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.worker.deserializers.IndexObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.worker.repository.UsersRepository;
+import org.worker.user.User;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,6 +27,11 @@ public class UsersIndexMapConfig {
      */
     @Bean
     public HashMap<String, HashMap<IndexObject, List<String>>> usersIndexMap() {
-        return new HashMap<>();
+        List<User> users = usersRepository.readUsers();
+        HashMap<String, HashMap<IndexObject, List<String>>> map = new HashMap<>();
+        for (User user : users) {
+            map.put(user.getUsername(), new HashMap<>());
+        }
+        return map;
     }
 }
