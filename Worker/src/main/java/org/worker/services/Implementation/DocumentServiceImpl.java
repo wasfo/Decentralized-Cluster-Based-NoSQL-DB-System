@@ -7,6 +7,7 @@ import org.worker.models.Document;
 import org.worker.models.JsonProperty;
 import org.worker.services.CollectionService;
 import org.worker.services.DocumentService;
+import org.worker.services.IndexingService;
 import org.worker.services.JsonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,17 +27,20 @@ import static org.worker.utils.DbUtils.getResponseEntity;
 public class DocumentServiceImpl implements DocumentService {
 
     private final JsonService jsonService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final IndexingService indexingService;
     private final CollectionService collectionService;
-    private String storagePath;
+    private final String storagePath;
 
 
     @Autowired
     public DocumentServiceImpl(@Qualifier("storagePath") String storagePath,
-                               JsonService jsonService, CollectionService collectionService) {
+                               JsonService jsonService,
+                               CollectionService collectionService,
+                               IndexingService indexingService) {
         this.storagePath = storagePath;
         this.jsonService = jsonService;
         this.collectionService = collectionService;
+        this.indexingService = indexingService;
     }
 
 
@@ -44,7 +48,8 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<?> readDocumentById(String userDir,
                                               String dbName,
                                               String collectionName,
-                                              String id) throws IOException, ExecutionException, InterruptedException {
+                                              String id) throws IOException{
+
         Optional<Collection> collection = collectionService.readCollection(userDir, dbName, collectionName);
         if (collection.isPresent()) {
             for (Document document : collection.get().getDocuments()) {
@@ -96,8 +101,6 @@ public class DocumentServiceImpl implements DocumentService {
         jsonService.deleteAll(path, criteria);
         return getResponseEntity("document deleted successfully", HttpStatus.OK);
     }
-
-
 
 
 }

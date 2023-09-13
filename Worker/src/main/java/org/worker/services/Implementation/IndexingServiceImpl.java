@@ -168,15 +168,12 @@ public class IndexingServiceImpl implements IndexingService {
             indexingMap.remove(index);
         }
 
-
     }
 
     @Override
-    public List<Map.Entry<IndexObject, List<String>>> readIndex(String username,
-                                                                String dbName,
-                                                                String collectionName,
-                                                                String fieldName) {
-        IndexObject targetObject = new IndexObject(dbName, collectionName, fieldName, null);
+    public List<Map.Entry<IndexObject, List<String>>> readSpecificIndex(String username,
+                                                                        IndexObject targetObject) {
+
         HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
 
         return indexingMap
