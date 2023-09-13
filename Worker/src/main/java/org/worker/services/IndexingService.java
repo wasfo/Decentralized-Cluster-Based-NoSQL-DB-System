@@ -16,7 +16,7 @@ public interface IndexingService {
     public void removeIndex(String userDir,
                             String dbName,
                             String collectionName,
-                            String fieldName);
+                            String fieldName) throws IOException;
 
     public List<Map.Entry<IndexObject, List<String>>> readIndex(String userDir,
                                                                 String dbName,

@@ -40,11 +40,13 @@ public class IndexingServiceImpl implements IndexingService {
     private final HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
     private final CollectionService collectionService;
-    private @Qualifier("storagePath") String storage_Path;
+    private String storagePath;
 
     @Autowired
-    public IndexingServiceImpl(HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap,
+    public IndexingServiceImpl(@Qualifier("storagePath") String storage_Path,
+                               HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap,
                                CollectionService collectionService) {
+        this.storagePath = storage_Path;
         this.usersIndexesMap = usersIndexesMap;
         this.collectionService = collectionService;
     }
@@ -54,8 +56,9 @@ public class IndexingServiceImpl implements IndexingService {
                                               String dbName,
                                               String collectionName,
                                               String fieldName) throws IOException {
+
         ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
-        Path collectionDirectory = Path.of(storage_Path, username, dbName, collectionName);
+        Path collectionDirectory = Path.of(storagePath, username, dbName, collectionName);
 
         ResponseEntity<String> BAD_REQUEST = fieldNameExists(fieldName, schema);
         if (BAD_REQUEST != null) return BAD_REQUEST;
@@ -74,11 +77,10 @@ public class IndexingServiceImpl implements IndexingService {
                     readCollection(username, dbName, collectionName);
 
             if (collection.isPresent()) {
-                List<IndexObject> indexObjectList = new ArrayList<>();
+                IndexObject indexObjectToBeSaved = new IndexObject(dbName, collectionName, fieldName, null);
                 for (Document document : collection.get().getDocuments()) {
                     String value = document.getObjectNode().get(fieldName).asText();
                     IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, value);
-                    indexObjectList.add(indexObject);
                     if (indexingMap.containsKey(indexObject)) {
                         indexingMap.get(indexObject).add(document.get_id());
                     } else {
@@ -87,7 +89,7 @@ public class IndexingServiceImpl implements IndexingService {
                         indexingMap.put(indexObject, list);
                     }
                 }
-                saveIndexes(indexObjectList, collectionDirectory);
+                saveIndexes(List.of(indexObjectToBeSaved), collectionDirectory);
             }
             System.out.println(usersIndexesMap);
 
@@ -96,8 +98,9 @@ public class IndexingServiceImpl implements IndexingService {
             return DbUtils.getResponseEntity("internal server error in indexing service",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return DbUtils.getResponseEntity("indexing on field: " + fieldName + " created successfully",
-                HttpStatus.OK);
+        return DbUtils.getResponseEntity("indexing on field: " +
+                        fieldName + " created successfully",
+                HttpStatus.CREATED);
     }
 
     private void saveIndexes(List<IndexObject> indexObjects, Path collectionPath) throws IOException {
@@ -124,7 +127,7 @@ public class IndexingServiceImpl implements IndexingService {
     public void removeIndex(String userDir,
                             String dbName,
                             String collectionName,
-                            String fieldName) {
+                            String fieldName) throws IOException {
 
         removeIndexFromMap(userDir, dbName, collectionName, fieldName);
         removeIndexFromFile(userDir, dbName, collectionName, fieldName);
@@ -132,31 +135,32 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
 
-    private void removeIndexFromFile(String userDir,
+    private void removeIndexFromFile(String username,
                                      String dbName,
                                      String collectionName,
-                                     String fieldName) {
-        Path indexesFilePath = Path.of(storage_Path,
+                                     String fieldName) throws IOException {
+        Path collectionPath = Path.of(storagePath,
+                username,
                 dbName,
-                collectionName,
-                "indexes.json");
+                collectionName);
+        IndexObject targetObject = new IndexObject(dbName, collectionName, fieldName, null);
+        List<IndexObject> indexObjectList = readIndexObjects(collectionPath);
+        indexObjectList.removeIf(object -> object.equals(targetObject));
 
-
+        saveIndexes(indexObjectList, collectionPath);
     }
 
     private void removeIndexFromMap(String username,
                                     String dbName,
                                     String collectionName,
                                     String fieldName) {
-        IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, null);
+        IndexObject targetObject = new IndexObject(dbName, collectionName, fieldName, null);
         HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
 
-        List<IndexObject> foundIndexes = indexingMap.keySet().stream().filter(
-                entry ->
-                        entry.getDbName().equals(indexObject.getDbName()) &&
-                                entry.getCollectionName().equals(indexObject.getCollectionName()) &&
-                                entry.getFieldName().equals(indexObject.getFieldName())
-        ).toList();
+        List<IndexObject> foundIndexes = indexingMap
+                .keySet()
+                .stream()
+                .filter(entry -> entry.equals(targetObject)).toList();
 
         // foundIndexes.forEach(indexingMap::remove);
 
@@ -172,16 +176,13 @@ public class IndexingServiceImpl implements IndexingService {
                                                                 String dbName,
                                                                 String collectionName,
                                                                 String fieldName) {
-        IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, null);
+        IndexObject targetObject = new IndexObject(dbName, collectionName, fieldName, null);
         HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
-        List<Map.Entry<IndexObject, List<String>>> entries = indexingMap.entrySet().stream().filter(
-                entry ->
-                        entry.getKey().getDbName().equals(indexObject.getDbName()) &&
-                                entry.getKey().getCollectionName().equals(indexObject.getCollectionName()) &&
-                                entry.getKey().getFieldName().equals(indexObject.getFieldName())
-        ).toList();
 
-        return entries;
+        return indexingMap
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().equals(targetObject)).toList();
     }
 
 
@@ -195,34 +196,26 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     static private boolean indexAlreadyExists(Path pathOfCollectionDir, IndexObject targetObject) {
-        Path path = Path.of(pathOfCollectionDir.toString(), "indexes.json");
+        List<IndexObject> indexObjectList = readIndexObjects(pathOfCollectionDir);
+        return indexObjectList.stream().anyMatch(
+                indexObject -> indexObject.equals(targetObject));
+    }
+
+    private static List<IndexObject> readIndexObjects(Path collectionPath) {
+        String indexesFileName = "indexes.json";
+        Path indexFilePath = Path.of(collectionPath.toString(), indexesFileName);
+        if (indexFilePath.toFile().length() == 0)
+            return Collections.emptyList();
         TypeReference<List<IndexObject>> typeReference = new TypeReference<>() {
         };
         ObjectMapper mapper = new ObjectMapper();
         List<IndexObject> indexObjectList;
-        try (InputStream inputStream = Files.newInputStream(path)) {
+        try (InputStream inputStream = Files.newInputStream(indexFilePath)) {
             indexObjectList = mapper.readValue(inputStream, typeReference);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return indexObjectList.stream().anyMatch(
-                indexObject ->
-                        indexObject.getDbName().equals(targetObject.getDbName()) &&
-                                indexObject.getCollectionName().equals(targetObject.getCollectionName()) &&
-                                indexObject.getFieldName().equals(targetObject.getFieldName()));
+        return indexObjectList;
     }
 
-
-    public static void main(String[] args) throws IOException {
-        Path storagePath = Path.of(
-                "Storage",
-                "Node1" + "-Storage");
-        Path path = Path.of(storagePath.toString(), "ahmad2@gmail.com", "db1", "students");
-        IndexObject indexObject = new IndexObject("db1",
-                "students",
-                "age",
-                null);
-
-        System.out.println(indexAlreadyExists(path, indexObject));
-    }
 }
