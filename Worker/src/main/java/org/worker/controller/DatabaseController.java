@@ -22,12 +22,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/databases")
 public class DatabaseController {
-
     private final DatabaseService databaseService;
     private final BroadcastService broadcastService;
-
     @Value("${node.name}")
     private String nodeName;
+
     @Autowired
     public DatabaseController(DatabaseService databaseService, BroadcastService broadcastService) {
         this.databaseService = databaseService;
@@ -59,8 +58,7 @@ public class DatabaseController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteDatabase(@RequestBody DeleteDatabaseRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         ResponseEntity<String> response = databaseService.deleteDatabase(username, request.getDbName());
         if (DbUtils.isResponseSuccessful(response)) {
             DeleteDatabaseEvent event = new DeleteDatabaseEvent();

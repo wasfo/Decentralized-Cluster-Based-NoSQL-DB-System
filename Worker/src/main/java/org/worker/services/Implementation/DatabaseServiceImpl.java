@@ -52,7 +52,6 @@ public class DatabaseServiceImpl implements DatabaseService {
         if (userFile.exists()) {
             try {
                 File newDirectory = new File(userFile, dbName);
-                System.out.println("database is -> " + dbName);
                 boolean isDirectoryCreated = newDirectory.mkdir();
                 if (isDirectoryCreated) {
                     String responseMessage = "Database '" + dbName + "' created successfully.";

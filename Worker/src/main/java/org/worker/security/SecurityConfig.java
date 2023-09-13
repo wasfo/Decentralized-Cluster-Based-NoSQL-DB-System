@@ -34,9 +34,6 @@ public class SecurityConfig {
         return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
     }
 
-    /**
-     * predefined node credentials
-     */
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -65,9 +62,4 @@ public class SecurityConfig {
         return authenticationProvider;
     }
 
-//
-//    @Autowired
-//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(userDetailsServiceFromJson);
-//    }
 }

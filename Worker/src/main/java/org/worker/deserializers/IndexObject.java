@@ -13,6 +13,7 @@ import java.util.Objects;
 @Data
 @Builder
 public class IndexObject {
+    private String dbName;
     private String collectionName;
     private String fieldName;
     private String value;

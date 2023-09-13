@@ -112,6 +112,7 @@ public class KafkaListeners {
         }
     }
 
+
     @KafkaListener(topics = "newEmptyCollectionTopic")
     public void newEmptyCollection(NewEmptyCollectionEvent event) throws IOException {
         if (!event.getBroadcastingNodeName().equals(nodeName)) {

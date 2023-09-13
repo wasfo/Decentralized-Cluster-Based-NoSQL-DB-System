@@ -51,7 +51,7 @@ public class UsersRepoService implements UsersRepository {
     }
 
     @Override
-    public Boolean save(User user) {
+    public synchronized Boolean save(User user) {
         try {
             if (userExists(user.getUsername()))
                 return false;
@@ -82,7 +82,7 @@ public class UsersRepoService implements UsersRepository {
 
 
     @Override
-    public Boolean deleteByEmail(String email) {
+    public synchronized Boolean deleteByEmail(String email) {
         List<User> users = readUsers();
         Optional<User> targetUser = users
                 .parallelStream()

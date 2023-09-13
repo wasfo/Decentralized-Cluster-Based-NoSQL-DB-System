@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
 
 @Data
-@RequiredArgsConstructor
 public class DeleteCollectionEvent extends WriteEvent {
-
-
     private String dbName;
     private String collectionName;
 

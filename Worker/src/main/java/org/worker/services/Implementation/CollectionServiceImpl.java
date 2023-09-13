@@ -43,7 +43,9 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException {
+    public Optional<Collection> readCollection(String username,
+                                               String dbName,
+                                               String collectionName) throws IOException {
 
         Path collectionPath = Path.of(storagePath, username,
                 dbName, collectionName, collectionName + ".json");
@@ -133,15 +135,18 @@ public class CollectionServiceImpl implements CollectionService {
                 collectionName + ".json");
         Path schemaPath = Path.of(storagePath, userDir, dbName,
                 collectionName, "schema.json");
+        Path indexes = Path.of(storagePath, userDir, dbName,
+                collectionName, "index.json");
 
         boolean isCollectionCreated = collectionPath.toFile().createNewFile();
         boolean isSchemaCreated = schemaPath.toFile().createNewFile();
-
+        boolean isIndexesCreated = indexes.toFile().createNewFile();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(schemaPath.toFile(), schema);
 
         return getResponseEntity("collection created: " + isCollectionCreated
                         + "\n" + " schema created: " + isSchemaCreated
+                        + "\n" + " indexes file: " + isIndexesCreated
                 , HttpStatus.CREATED);
 
     }
