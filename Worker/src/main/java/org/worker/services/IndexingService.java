@@ -2,6 +2,7 @@ package org.worker.services;
 
 import org.worker.deserializers.IndexObject;
 import org.springframework.http.ResponseEntity;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ public interface IndexingService {
                                               String dbName,
                                               String collectionName,
                                               String fieldName) throws IOException;
+
     public void removeIndex(String userDir,
                             String dbName,
                             String collectionName,
@@ -21,7 +23,11 @@ public interface IndexingService {
                                                                         IndexObject targetObject) throws IOException;
 
 
+    public boolean loadIndexToMap(String username,
+                                  String dbName,
+                                  String collectionName,
+                                  String fieldName);
 
-
+    public void loadAllIndexesToMap(String username);
 
 }

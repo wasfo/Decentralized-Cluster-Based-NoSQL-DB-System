@@ -40,7 +40,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final HashMap<String, HashMap<IndexObject, List<String>>> usersIndexesMap;
     private static final Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
     private final CollectionService collectionService;
-    private String storagePath;
+    private final String storagePath;
 
     @Autowired
     public IndexingServiceImpl(@Qualifier("storagePath") String storage_Path,
@@ -60,14 +60,34 @@ public class IndexingServiceImpl implements IndexingService {
         ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
         Path indexesPath = Path.of(storagePath, username);
 
-        ResponseEntity<String> BAD_REQUEST = fieldNameExists(fieldName, schema);
-        if (BAD_REQUEST != null) return BAD_REQUEST;
+        ResponseEntity<String> response = fieldNameExists(fieldName, schema);
+        if (response != null)
+            return response;
 
         boolean indexAlreadyExists = indexAlreadyExists(indexesPath,
                 new IndexObject(dbName, collectionName, fieldName, null));
-        if (indexAlreadyExists) return DbUtils.getResponseEntity("index already exists",
-                HttpStatus.CONFLICT);
+        if (indexAlreadyExists)
+            return DbUtils.getResponseEntity("index already exists",
+                    HttpStatus.CONFLICT);
 
+        IndexObject indexObjectToBeSaved = new IndexObject(dbName, collectionName, fieldName, null);
+
+        boolean areLoaded = loadIndexToMap(username, dbName, collectionName, fieldName);
+        if (!areLoaded)
+            return DbUtils.getResponseEntity("internal server error in indexing service",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+
+        saveIndexes(List.of(indexObjectToBeSaved), indexesPath);
+        return DbUtils.getResponseEntity("indexing on field: " +
+                        fieldName + " created successfully",
+                HttpStatus.CREATED);
+    }
+
+    @Override
+    public boolean loadIndexToMap(String username,
+                                  String dbName,
+                                  String collectionName,
+                                  String fieldName) {
         try {
             HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
             if (indexingMap == null)
@@ -75,9 +95,7 @@ public class IndexingServiceImpl implements IndexingService {
 
             Optional<Collection> collection = collectionService.
                     readCollection(username, dbName, collectionName);
-
             if (collection.isPresent()) {
-                IndexObject indexObjectToBeSaved = new IndexObject(dbName, collectionName, fieldName, null);
                 for (Document document : collection.get().getDocuments()) {
                     String value = document.getObjectNode().get(fieldName).asText();
                     IndexObject indexObject = new IndexObject(dbName, collectionName, fieldName, value);
@@ -89,17 +107,23 @@ public class IndexingServiceImpl implements IndexingService {
                         indexingMap.put(indexObject, list);
                     }
                 }
-                saveIndexes(List.of(indexObjectToBeSaved), indexesPath);
             }
-
         } catch (IOException exception) {
             logger.error("An error occurred in indexing:", exception);
-            return DbUtils.getResponseEntity("internal server error in indexing service",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            return false;
         }
-        return DbUtils.getResponseEntity("indexing on field: " +
-                        fieldName + " created successfully",
-                HttpStatus.CREATED);
+        return true;
+    }
+
+    @Override
+    public void loadAllIndexesToMap(String username) {
+        List<IndexObject> indexObjects = readIndexObjects(Path.of(storagePath, username));
+        if (indexObjects.isEmpty())
+            return;
+
+        for (IndexObject object : indexObjects) {
+            loadIndexToMap(username, object.getDbName(), object.getCollectionName(), object.getFieldName());
+        }
     }
 
     private void saveIndexes(List<IndexObject> indexObjects, Path indexesPath) throws IOException {

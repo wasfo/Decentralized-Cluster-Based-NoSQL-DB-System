@@ -46,10 +46,6 @@ public class KafkaListeners {
     public void createIndex(RegistrationEvent event) throws IOException {
         registrationService.registerUser(event.getUser());
     }
-    @KafkaListener(topics = "registerUserTopic")
-    public void registerUser(RegistrationEvent event) throws IOException {
-        registrationService.registerUser(event.getUser());
-    }
 
     @KafkaListener(topics = "createDatabaseTopic")
     public void createDatabase(CreateDatabaseEvent event) {
@@ -106,5 +102,13 @@ public class KafkaListeners {
                 event.getUsername(),
                 event.getRequest().getDbName(),
                 event.getRequest().getCollectionName());
+    }
+
+    @KafkaListener(topics = "createIndexTopic")
+    public void createIndex(IndexEvent event) throws IOException {
+        indexingService.createIndex(event.getUsername(),
+                event.getIndexRequest().getDbName(),
+                event.getIndexRequest().getCollectionName(),
+                event.getIndexRequest().getFieldName());
     }
 }

@@ -61,4 +61,18 @@ public class IndexingController {
 
         return new ResponseEntity<>(usersIndexesMap, HttpStatus.OK);
     }
+
+    @PostMapping("/load")
+    public ResponseEntity<?> loadAll() throws IOException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        indexingService.loadAllIndexesToMap(username);
+        return new ResponseEntity<>(usersIndexesMap, HttpStatus.OK);
+    }
+
+    @PostMapping("/getMap")
+    public ResponseEntity<?> getMap() throws IOException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return new ResponseEntity<>(usersIndexesMap, HttpStatus.OK);
+    }
 }
+

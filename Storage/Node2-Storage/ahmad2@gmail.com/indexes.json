@@ -1,1 +1,8 @@
-[{"dbName":"db1","collectionName":"students","fieldName":"age","value":null}]
+[
+  {
+    "dbName": "db1",
+    "collectionName": "students",
+    "fieldName": "age",
+    "value": null
+  }
+]
