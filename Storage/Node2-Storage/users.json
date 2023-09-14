@@ -10,4 +10,8 @@
   "username" : "alosh",
   "password" : "fuck",
   "roles" : [ "USER" ]
+}, {
+  "username" : "fawzi",
+  "password" : "12356",
+  "roles" : [ "USER" ]
 } ]

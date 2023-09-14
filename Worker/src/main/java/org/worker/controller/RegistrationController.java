@@ -28,14 +28,9 @@ public class RegistrationController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
-        boolean isRegistered = usersRepoService.save(user);
-        if (isRegistered) {
-            RegistrationEvent registrationEvent = new RegistrationEvent();
-            registrationEvent.setUser(user);
-            registrationEvent.setBroadcastingNodeName(nodeName);
-            broadcastService.broadCastWithKafka(Topic.Register_User_Topic, registrationEvent);
-        }
-        return new ResponseEntity<>(user.getUsername() + " registered? " +
-                isRegistered, HttpStatus.CREATED);
+        RegistrationEvent registrationEvent = new RegistrationEvent(user);
+        broadcastService.broadCastWithKafka(Topic.Register_User_Topic, registrationEvent);
+
+        return new ResponseEntity<>(user.getUsername() + " registered? ", HttpStatus.CREATED);
     }
 }

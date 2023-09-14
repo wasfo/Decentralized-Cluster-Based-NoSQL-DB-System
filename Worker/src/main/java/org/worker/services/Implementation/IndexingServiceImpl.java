@@ -58,12 +58,12 @@ public class IndexingServiceImpl implements IndexingService {
                                               String fieldName) throws IOException {
 
         ObjectNode schema = collectionService.readSchema(username, dbName, collectionName);
-        Path collectionDirectory = Path.of(storagePath, username, dbName, collectionName);
+        Path indexesPath = Path.of(storagePath, username);
 
         ResponseEntity<String> BAD_REQUEST = fieldNameExists(fieldName, schema);
         if (BAD_REQUEST != null) return BAD_REQUEST;
 
-        boolean indexAlreadyExists = indexAlreadyExists(collectionDirectory,
+        boolean indexAlreadyExists = indexAlreadyExists(indexesPath,
                 new IndexObject(dbName, collectionName, fieldName, null));
         if (indexAlreadyExists) return DbUtils.getResponseEntity("index already exists",
                 HttpStatus.CONFLICT);
@@ -89,9 +89,8 @@ public class IndexingServiceImpl implements IndexingService {
                         indexingMap.put(indexObject, list);
                     }
                 }
-                saveIndexes(List.of(indexObjectToBeSaved), collectionDirectory);
+                saveIndexes(List.of(indexObjectToBeSaved), indexesPath);
             }
-            System.out.println(usersIndexesMap);
 
         } catch (IOException exception) {
             logger.error("An error occurred in indexing:", exception);
@@ -103,7 +102,7 @@ public class IndexingServiceImpl implements IndexingService {
                 HttpStatus.CREATED);
     }
 
-    private void saveIndexes(List<IndexObject> indexObjects, Path collectionPath) throws IOException {
+    private void saveIndexes(List<IndexObject> indexObjects, Path indexesPath) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         for (IndexObject indexObject : indexObjects) {
@@ -111,7 +110,7 @@ public class IndexingServiceImpl implements IndexingService {
         }
 
         String indexesFileName = "indexes.json";
-        Path indexFilePath = Path.of(collectionPath.toString(), indexesFileName);
+        Path indexFilePath = Path.of(indexesPath.toString(), indexesFileName);
         boolean isCreated = true;
         if (!indexFilePath.toFile().exists()) {
             isCreated = indexFilePath.toFile().createNewFile();
@@ -139,15 +138,12 @@ public class IndexingServiceImpl implements IndexingService {
                                      String dbName,
                                      String collectionName,
                                      String fieldName) throws IOException {
-        Path collectionPath = Path.of(storagePath,
-                username,
-                dbName,
-                collectionName);
+        Path indexesPath = Path.of(storagePath, username);
         IndexObject targetObject = new IndexObject(dbName, collectionName, fieldName, null);
-        List<IndexObject> indexObjectList = readIndexObjects(collectionPath);
+        List<IndexObject> indexObjectList = readIndexObjects(indexesPath);
         indexObjectList.removeIf(object -> object.equals(targetObject));
 
-        saveIndexes(indexObjectList, collectionPath);
+        saveIndexes(indexObjectList, indexesPath);
     }
 
     private void removeIndexFromMap(String username,
@@ -192,15 +188,15 @@ public class IndexingServiceImpl implements IndexingService {
         return null;
     }
 
-    static private boolean indexAlreadyExists(Path pathOfCollectionDir, IndexObject targetObject) {
-        List<IndexObject> indexObjectList = readIndexObjects(pathOfCollectionDir);
+    static private boolean indexAlreadyExists(Path indexesPath, IndexObject targetObject) {
+        List<IndexObject> indexObjectList = readIndexObjects(indexesPath);
         return indexObjectList.stream().anyMatch(
                 indexObject -> indexObject.equals(targetObject));
     }
 
-    private static List<IndexObject> readIndexObjects(Path collectionPath) {
+    private static List<IndexObject> readIndexObjects(Path indexesPath) {
         String indexesFileName = "indexes.json";
-        Path indexFilePath = Path.of(collectionPath.toString(), indexesFileName);
+        Path indexFilePath = Path.of(indexesPath.toString(), indexesFileName);
         if (indexFilePath.toFile().length() == 0)
             return Collections.emptyList();
         TypeReference<List<IndexObject>> typeReference = new TypeReference<>() {

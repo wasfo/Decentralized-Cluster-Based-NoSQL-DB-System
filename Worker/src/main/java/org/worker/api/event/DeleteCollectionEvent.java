@@ -7,10 +7,15 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
+import org.worker.api.writeRequests.DeleteCollectionRequest;
 
 @Data
 public class DeleteCollectionEvent extends WriteEvent {
-    private String dbName;
-    private String collectionName;
 
+    private DeleteCollectionRequest request;
+
+    public DeleteCollectionEvent(String username, DeleteCollectionRequest request) {
+        super.username = username;
+        this.request = request;
+    }
 }

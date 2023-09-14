@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.worker.api.WriteRequest;
@@ -16,6 +17,7 @@ import org.worker.api.event.WriteEvent;
 import org.worker.node.Node;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 /**

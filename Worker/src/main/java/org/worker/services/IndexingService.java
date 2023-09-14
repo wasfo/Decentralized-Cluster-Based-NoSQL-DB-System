@@ -19,4 +19,9 @@ public interface IndexingService {
 
     public List<Map.Entry<IndexObject, List<String>>> readSpecificIndex(String userDir,
                                                                         IndexObject targetObject) throws IOException;
+
+
+
+
+
 }

@@ -10,7 +10,9 @@ public enum Topic {
     Delete_Document_Topic("deleteDocumentTopic"),
     Delete_All_Documents_Topic("deleteAllDocumentsTopic"),
     New_Collection_Topic("newCollectionTopic"),
-    New_Empty_Collection_Topic("newEmptyCollectionTopic");
+    New_Empty_Collection_Topic("newEmptyCollectionTopic"),
+
+    Create_Index_Topic("createIndexTopic");
 
 
     private final String topicValue;

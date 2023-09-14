@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.worker.api.event.DeleteCollectionEvent;
 import org.worker.api.event.NewCollectionEvent;
 import org.worker.api.event.NewEmptyCollectionEvent;
+import org.worker.api.event.WriteEvent;
 import org.worker.api.readRequests.ReadCollectionRequest;
 import org.worker.api.writeRequests.DeleteCollectionRequest;
 import org.worker.api.writeRequests.NewCollectionRequest;
@@ -29,11 +30,9 @@ import java.util.Optional;
 @RequestMapping("/api/collections")
 public class CollectionController {
 
-    private CollectionService collectionService;
-    private BroadcastService broadcastService;
+    private final CollectionService collectionService;
+    private final BroadcastService broadcastService;
 
-    @Value("${node.name}")
-    private String nodeName;
 
     @Autowired
     public CollectionController(CollectionService collectionService,
@@ -67,12 +66,7 @@ public class CollectionController {
                 username, request.getDbName(), request.getCollection());
 
         if (DbUtils.isResponseSuccessful(response)) {
-            NewCollectionEvent event = new NewCollectionEvent();
-            event.setCollection(request.getCollection());
-            event.setUsername(username);
-            event.setSchema(request.getSchema());
-            event.setDbName(request.getDbName());
-            event.setBroadcastingNodeName(nodeName);
+            NewCollectionEvent event = new NewCollectionEvent(username, request);
             broadcastService.broadCastWithKafka(Topic.New_Empty_Collection_Topic, event);
         }
 
@@ -80,44 +74,28 @@ public class CollectionController {
     }
 
     @PostMapping("/newEmpty")
-    public ResponseEntity<String> createNewEmptyCollection(@RequestBody NewEmptyCollectionRequest request) throws IOException {
+    public ResponseEntity<String> createNewEmptyCollection(@RequestBody NewEmptyCollectionRequest request)
+            throws IOException {
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        ResponseEntity<String> response = collectionService.createNewEmptyCollection(request.getSchema(),
-                username, request.getDbName(), request.getCollectionName());
-
-        if (DbUtils.isResponseSuccessful(response)) {
-            NewEmptyCollectionEvent event = new NewEmptyCollectionEvent();
-            event.setCollectionName(request.getCollectionName());
-            event.setUsername(username);
-            event.setSchema(request.getSchema());
-            event.setDbName(request.getDbName());
-            event.setBroadcastingNodeName(nodeName);
-            event.setUsername(username);
-            broadcastService.broadCastWithKafka(Topic.New_Empty_Collection_Topic, event);
-        }
-
-        return response;
+        NewEmptyCollectionEvent event = new NewEmptyCollectionEvent(username, request);
+        broadcastService.broadCastWithKafka(Topic.New_Empty_Collection_Topic, event);
+        return DbUtils.getResponseEntity("new collection with name: "
+                        + request.getCollectionName() + " has been created",
+                HttpStatus.CREATED);
     }
 
 
     @PostMapping("/delete")
     public ResponseEntity<String> deleteCollection(@RequestBody DeleteCollectionRequest request) {
 
-
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("USERNAME  IS -> " + username);
-        ResponseEntity<String> response = collectionService.deleteCollection(username,
-                request.getDbName(), request.getCollectionName());
-        if (DbUtils.isResponseSuccessful(response)) {
-            DeleteCollectionEvent event = new DeleteCollectionEvent();
-            event.setBroadcastingNodeName(nodeName);
-            event.setUsername(username);
-            event.setDbName(request.getDbName());
-            event.setCollectionName(request.getCollectionName());
-            broadcastService.broadCastWithKafka(Topic.Delete_Collection_Topic, event);
-        }
-        return response;
+        DeleteCollectionEvent event = new DeleteCollectionEvent(username, request);
+        broadcastService.broadCastWithKafka(Topic.Delete_Collection_Topic, event);
+
+        return DbUtils.getResponseEntity(" collection with name: "
+                        + request.getCollectionName() + " has been deleted",
+                HttpStatus.OK);
 
     }
 

@@ -1,4 +1,4 @@
-package org.worker.api;
+package org.worker.api.writeRequests;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

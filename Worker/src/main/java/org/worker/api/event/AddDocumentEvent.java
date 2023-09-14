@@ -6,15 +6,17 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
+import org.worker.api.writeRequests.AddDocumentRequest;
 
 
 @RequiredArgsConstructor
 @Data
 public class AddDocumentEvent extends WriteEvent {
 
-    private String dbName;
+    private AddDocumentRequest request;
 
-    private String collectionName;
-
-    private ObjectNode objectNode;
+    public AddDocumentEvent(String username, AddDocumentRequest request) {
+        super.username = username;
+        this.request = request;
+    }
 }

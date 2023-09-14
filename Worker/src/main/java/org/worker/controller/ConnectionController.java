@@ -15,7 +15,7 @@ public class ConnectionController {
     private String serverPort;
 
     @GetMapping("/get")
-    public ResponseEntity<String> getConnection(@RequestHeader HttpHeaders headers) {
+    public ResponseEntity<String> getConnection() {
         return ResponseEntity.ok(serverPort);
     }
 }

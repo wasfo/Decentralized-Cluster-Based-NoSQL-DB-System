@@ -8,15 +8,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.WriteRequest;
+import org.worker.api.writeRequests.NewEmptyCollectionRequest;
 
-@RequiredArgsConstructor
 @Data
 public class NewEmptyCollectionEvent extends WriteEvent {
-    private String collectionName;
-    @NotNull
-    private ObjectNode schema;
-    @NotNull
-    private String dbName;
 
-    private String username;
+    private NewEmptyCollectionRequest request;
+
+    public NewEmptyCollectionEvent(String username, NewEmptyCollectionRequest request) {
+        super.username = username;
+        this.request = request;
+    }
 }
