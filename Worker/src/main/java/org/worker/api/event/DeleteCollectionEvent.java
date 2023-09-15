@@ -2,14 +2,12 @@ package org.worker.api.event;
 
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 import org.worker.api.writeRequests.DeleteCollectionRequest;
 
 @Data
+@NoArgsConstructor
 public class DeleteCollectionEvent extends WriteEvent {
 
     private DeleteCollectionRequest request;

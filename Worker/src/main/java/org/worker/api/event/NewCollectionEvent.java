@@ -3,15 +3,13 @@ package org.worker.api.event;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 import org.worker.api.writeRequests.NewCollectionRequest;
 import org.worker.models.Collection;
 
 @Data
+@NoArgsConstructor
 public class NewCollectionEvent extends WriteEvent {
 
 

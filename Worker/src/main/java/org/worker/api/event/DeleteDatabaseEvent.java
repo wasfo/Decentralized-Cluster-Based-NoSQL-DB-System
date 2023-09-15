@@ -2,10 +2,11 @@ package org.worker.api.event;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.worker.api.writeRequests.DeleteDatabaseRequest;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Data
 
 public class DeleteDatabaseEvent extends WriteEvent {

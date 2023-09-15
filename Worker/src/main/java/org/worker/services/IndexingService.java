@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface IndexingService {
 
@@ -19,8 +20,8 @@ public interface IndexingService {
                             String collectionName,
                             String fieldName) throws IOException;
 
-    public List<Map.Entry<IndexObject, List<String>>> readSpecificIndex(String userDir,
-                                                                        IndexObject targetObject) throws IOException;
+    public Optional<List<String>> readSpecificIndex(String userDir,
+                                                    IndexObject targetObject) throws IOException;
 
 
     public boolean loadIndexToMap(String username,

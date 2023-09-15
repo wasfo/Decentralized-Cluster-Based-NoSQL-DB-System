@@ -2,14 +2,11 @@ package org.worker.api.event;
 
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.worker.api.WriteRequest;
 import org.worker.api.writeRequests.DeleteDocumentRequest;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Data
 
 public class DeleteDocumentEvent extends WriteEvent {

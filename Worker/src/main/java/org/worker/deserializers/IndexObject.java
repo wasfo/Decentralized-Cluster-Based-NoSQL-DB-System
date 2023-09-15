@@ -16,7 +16,7 @@ public class IndexObject {
     private String dbName;
     private String collectionName;
     private String fieldName;
-    private String value;
+    private Object value;
 
 
     @Override

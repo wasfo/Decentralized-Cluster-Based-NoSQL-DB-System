@@ -1,6 +1,7 @@
 package org.worker.services;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.worker.models.Document;
@@ -18,7 +19,7 @@ public interface DocumentService {
                                               String collectionName,
                                               String id) throws IOException, ProcessingException, ExecutionException, InterruptedException;
 
-    public ResponseEntity<List<Document>> readDocumentsByCriteria(String userDir,
+    public ResponseEntity<List<JsonNode>> readDocumentsByCriteria(String userDir,
                                                                   String dbName,
                                                                   String collectionName,
                                                                   JsonProperty<?> jsonProperty) throws IOException, ProcessingException;

@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 public interface CollectionService {
     public Optional<Collection> readCollection(String username, String dbName, String collectionName) throws IOException;
 
-    public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName);
+    public ResponseEntity<String> deleteCollection(String userDir, String dbName, String collectionName) throws IOException;
 
     public ResponseEntity<String> writeCollection(ObjectNode schema, String userDir, String DbName, Collection collection) throws IOException;
 

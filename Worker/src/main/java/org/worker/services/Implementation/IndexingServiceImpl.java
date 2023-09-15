@@ -19,14 +19,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -191,15 +190,22 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public List<Map.Entry<IndexObject, List<String>>> readSpecificIndex(String username,
-                                                                        IndexObject targetObject) {
+    public Optional<List<String>> readSpecificIndex(String username,
+                                                    IndexObject targetObject) {
 
         HashMap<IndexObject, List<String>> indexingMap = usersIndexesMap.get(username);
 
-        return indexingMap
+        Stream<Map.Entry<IndexObject, List<String>>> entriesStream = indexingMap
                 .entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().equals(targetObject)).toList();
+                .filter(entry -> entry.getKey().getDbName().equals(targetObject.getDbName()) &&
+                        entry.getKey().getCollectionName().equals(targetObject.getCollectionName()) &&
+                        entry.getKey().getFieldName().equals(targetObject.getFieldName()) &&
+                        entry.getKey().getValue().equals(targetObject.getValue()));
+
+        Optional<Map.Entry<IndexObject, List<String>>> targetEntry = entriesStream.findFirst();
+        return targetEntry.map(Map.Entry::getValue);
+
     }
 
 

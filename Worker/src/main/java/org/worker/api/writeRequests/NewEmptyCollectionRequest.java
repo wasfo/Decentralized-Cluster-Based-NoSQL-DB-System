@@ -11,7 +11,6 @@ import org.worker.api.WriteRequest;
 
 @Data
 @NoArgsConstructor
-
 public class NewEmptyCollectionRequest extends WriteRequest {
     private String collectionName;
     @NotNull

@@ -1,5 +1,6 @@
 package org.worker.controller;
 
+import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,13 +8,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.worker.api.event.AddDocumentEvent;
 import org.worker.api.event.DeleteAllDocumentsEvent;
 import org.worker.api.event.DeleteDocumentEvent;
+import org.worker.api.readRequests.ReadDocumentByCriteriaRequest;
+import org.worker.api.readRequests.ReadDocumentByIdRequest;
 import org.worker.api.writeRequests.AddDocumentRequest;
 import org.worker.api.writeRequests.DeleteAllDocumentsRequest;
 import org.worker.api.writeRequests.DeleteDocumentRequest;
@@ -45,6 +45,23 @@ public class DocumentController {
         this.broadcastService = broadcastService;
     }
 
+    @GetMapping("/readById")
+    public ResponseEntity<?> readDocumentById(@RequestBody ReadDocumentByIdRequest request) {
+        ResponseEntity<?> response;
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            response = documentService.readDocumentById(username,
+                    request.getDbName(),
+                    request.getColName(),
+                    request.getDocId());
+
+        } catch (Exception e) {
+            return DbUtils.getResponseEntity("something went wrong",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return response;
+    }
+
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteDocumentById(@RequestBody DeleteDocumentRequest request)
             throws IOException {
@@ -58,7 +75,8 @@ public class DocumentController {
     }
 
     @DeleteMapping("/delete/all")
-    public <T> ResponseEntity<String> deleteDocumentMany(@RequestBody DeleteAllDocumentsRequest<T> request)
+    public <T> ResponseEntity<String> deleteDocumentMany(@RequestBody DeleteAllDocumentsRequest<T>
+                                                                     request)
             throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -69,6 +87,22 @@ public class DocumentController {
         return DbUtils.getResponseEntity("documents with property:" +
                 request.getCriteria() + " deleted successfully", HttpStatus.OK);
 
+    }
+    @GetMapping("/read")
+    public ResponseEntity<?> readDocumentByCriteria(@RequestBody ReadDocumentByCriteriaRequest request) {
+        ResponseEntity<?> response;
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            response = documentService.readDocumentsByCriteria(username,
+                    request.getDbName(),
+                    request.getColName(),
+                    request.getCriteria());
+
+        } catch (Exception e) {
+            return DbUtils.getResponseEntity("something went wrong",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return response;
     }
 
     @PostMapping("/add")

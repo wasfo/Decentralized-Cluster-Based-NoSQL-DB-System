@@ -13,4 +13,5 @@ import lombok.Setter;
 public class JsonProperty<T> {
     private String key;
     private T value;
+
 }

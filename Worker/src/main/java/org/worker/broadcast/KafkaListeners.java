@@ -68,7 +68,7 @@ public class KafkaListeners {
     }
 
     @KafkaListener(topics = "deleteCollectionTopic")
-    public void deleteCollection(DeleteCollectionEvent event) {
+    public void deleteCollection(DeleteCollectionEvent event) throws IOException {
         collectionService.deleteCollection(event.getUsername(),
                 event.getRequest().getDbName(),
                 event.getRequest().getCollectionName());
